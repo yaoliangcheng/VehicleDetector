@@ -1,0 +1,10 @@
+#忽略编译生成的文件
+.cproject
+.project
+.mxproject
+/MDK-ARM/VehicleDetector/
+/MDK-ARM/VehicleDetector.uvguix.yaoli
+/MDK-ARM/VehicleDetector.uvoptx
+/MDK-ARM/startup_stm32l151xb.lst
+/MDK-ARM/EventRecorderStub.scvd
+/.settings/
