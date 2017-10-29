@@ -208,6 +208,8 @@ static float GetAngleValue(int16_t data)
  * 		  速度 = 加速度对时间的积分
  * 		 位移 = 速度对时间的积分
  * 		 制动距离：加速度为负的整个运动过程，一旦出现加速度为正，则制动距离清空
+ *
+ * 		 测试发现：静止状态下，加速度值有±0.5的零点偏移，所以绝对值<0.5默认为静止，不积分
  */
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 {
@@ -216,17 +218,21 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	/* x轴加速度在data1位置 */
 	Ax = GetAccelerateSpeed(buffer->data1);
 
-	ACCELERATE_Param.velocity += Ax * ACCELERATE_INTEGRAL_TIME;
-	ACCELERATE_Param.distance += ACCELERATE_Param.velocity
-			* ACCELERATE_INTEGRAL_TIME;
-	if (Ax < 0)
+	if (fabs(Ax) > 0.5)
 	{
-		ACCELERATE_Param.brakeDistance += ACCELERATE_Param.velocity
+		ACCELERATE_Param.velocity += Ax * ACCELERATE_INTEGRAL_TIME;
+		ACCELERATE_Param.distance += ACCELERATE_Param.velocity
 				* ACCELERATE_INTEGRAL_TIME;
-	}
-	else
-	{
-		ACCELERATE_Param.brakeDistance = 0;
+
+		if (Ax < 0)
+		{
+			ACCELERATE_Param.brakeDistance += ACCELERATE_Param.velocity
+					* ACCELERATE_INTEGRAL_TIME;
+		}
+		else
+		{
+			ACCELERATE_Param.brakeDistance = 0;
+		}
 	}
 
 #if DEVICE_TEST_MODE_ENABLE

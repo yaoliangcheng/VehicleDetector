@@ -21,7 +21,10 @@ void NOISE_Init(void)
  */
 void NOISE_Require(void)
 {
-	HAL_UART_Transmit_DMA(&NOISE_UART, (uint8_t*)NOISE_RequireCmd, sizeof(NOISE_RequireCmd));
+	HAL_UART_Transmit_DMA(&NOISE_UART, (uint8_t*)NOISE_RequireCmd,
+			sizeof(NOISE_RequireCmd));
+	/* 让噪音采集不那么频繁 */
+	HAL_Delay(100);
 }
 
 /*******************************************************************************
@@ -42,7 +45,8 @@ void NOISE_Process(void)
 			&& (NOISE_Recv.buffer.dataLength == NOISE_MODULE_DATA_LENGTH))
 		{
 			noiseValue = (NOISE_Recv.buffer.dataH << 8) | NOISE_Recv.buffer.dataL;
-			noise = (((uint32_t)noiseValue * NOISE_MODULE_RANGE_DB) / (float)65535);
+			noise = (((uint32_t)noiseValue * NOISE_MODULE_RANGE_DB)
+						/ (float)65535) + NOISE_MODULE_RANGE_DB_MIN;
 #if DEVICE_TEST_MODE_ENABLE
 			printf("噪声模块值=%d，噪声=%.1f", noiseValue, noise);
 #else

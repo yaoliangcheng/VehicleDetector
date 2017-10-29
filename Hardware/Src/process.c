@@ -42,7 +42,6 @@ void PROCESS(void)
 	case PROCESS_MODE_DETECTED_NOISE:
 		/* 噪声数据请求 */
 		NOISE_Require();
-		HAL_Delay(100);
 		break;
 
 	/* 侧滑量检测 */
@@ -51,6 +50,11 @@ void PROCESS(void)
 
 	/* 货叉下降速度检测 */
 	case PROCESS_MODE_DETECTED_DOWN_VELOCITY:
+		break;
+
+	/* 锂电池电量检测 */
+	case PROCESS_MODE_DETECTED_BAT_VOLTAGE:
+		ANALOG_Process();
 		break;
 
 	default:

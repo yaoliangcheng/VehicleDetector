@@ -38,6 +38,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l1xx_hal.h"
+#include "adc.h"
 #include "dma.h"
 #include "tim.h"
 #include "usart.h"
@@ -103,6 +104,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USART2_UART_Init();
   MX_TIM7_Init();
+  MX_ADC_Init();
 
   /* USER CODE BEGIN 2 */
   ACCELERATE_Init();

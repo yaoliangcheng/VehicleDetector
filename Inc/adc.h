@@ -1,7 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : main.h
-  * Description        : This file contains the common defines of the application
+  * File Name          : ADC.h
+  * Description        : This file provides code for the configuration
+  *                      of the ADC instances.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -36,44 +37,45 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
-  /* Includes ------------------------------------------------------------------*/
+#ifndef __adc_H
+#define __adc_H
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
+/* Includes ------------------------------------------------------------------*/
+#include "stm32l1xx_hal.h"
+#include "main.h"
 
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
-/* Private define ------------------------------------------------------------*/
-
-#define LED_Pin GPIO_PIN_14
-#define LED_GPIO_Port GPIOC
-#define PRESSURE_DT_Pin GPIO_PIN_15
-#define PRESSURE_DT_GPIO_Port GPIOB
-#define PRESSURE_SCK_Pin GPIO_PIN_8
-#define PRESSURE_SCK_GPIO_Port GPIOA
-#define OLED_CLK_Pin GPIO_PIN_3
-#define OLED_CLK_GPIO_Port GPIOB
-#define OLED_DOUT_Pin GPIO_PIN_5
-#define OLED_DOUT_GPIO_Port GPIOB
-#define OLED_DC_Pin GPIO_PIN_7
-#define OLED_DC_GPIO_Port GPIOB
+extern ADC_HandleTypeDef hadc;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void _Error_Handler(char *, int);
+extern void _Error_Handler(char *, int);
 
-#define Error_Handler() _Error_Handler(__FILE__, __LINE__)
+void MX_ADC_Init(void);
+
+/* USER CODE BEGIN Prototypes */
+
+/* USER CODE END Prototypes */
+
+#ifdef __cplusplus
+}
+#endif
+#endif /*__ adc_H */
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+  */
 
-#endif /* __MAIN_H */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

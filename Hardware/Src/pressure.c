@@ -55,7 +55,7 @@ void PRESSURE_GetPedalForce(void)
 			* PRESSURE_RANGE_PEDAL_FORCE;
 
 #if DEVICE_TEST_MODE_ENABLE
-	printf("HX711=%d,%x\r\n", value, value);
+//	printf("HX711=%d,%x\r\n", value, value);
 	printf("踏板力=%.1fN\r\n", pedal);
 #else
 
@@ -86,7 +86,7 @@ void PRESSURE_GetSteeringWheelForce(void)
 			* PRESSURE_RANGE_STEERING_WHEEL_FORCE;
 
 #if DEVICE_TEST_MODE_ENABLE
-	printf("HX711=%d,%x\r\n", value, value);
+//	printf("HX711=%d,%x\r\n", value, value);
 	printf("转向力=%.1fN\r\n", steeringWheelForce);
 #else
 
@@ -117,7 +117,7 @@ void PRESSURE_GetHandBrakeForce(void)
 			* PRESSURE_RANGE_HAND_BRAKE_FORCE;
 
 #if DEVICE_TEST_MODE_ENABLE
-	printf("HX711=%d,%x\r\n", value, value);
+//	printf("HX711=%d,%x\r\n", value, value);
 	printf("手刹力=%.1fN\r\n", handBrakeForce);
 #else
 
@@ -155,7 +155,6 @@ static uint32_t ReadValue(void)
 	value = value ^ 0x800000;
 	PRESSURE_SCK_WRITE(GPIO_PIN_RESET);
 
-	/* 取高16bits数据 */
 	return value;
 }
 

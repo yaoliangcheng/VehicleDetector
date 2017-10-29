@@ -29,10 +29,10 @@ typedef struct
 {
 	uint8_t addr;						/* 地址位 */
 	uint8_t cmdType;					/* 命令字 */
-	int16_t dataLength;					/* 数据长度 */
-	int16_t dataH;						/* 数据高位 */
-	int16_t dataL;						/* 数据低位 */
-	int16_t crcL;						/* CRC低位 */
+	uint8_t dataLength;					/* 数据长度 */
+	uint8_t dataH;						/* 数据高位 */
+	uint8_t dataL;						/* 数据低位 */
+	uint8_t crcL;						/* CRC低位 */
 	uint8_t crcH;						/* CRC高位 */
 } NOISE_RecvStrcutTypedef;
 

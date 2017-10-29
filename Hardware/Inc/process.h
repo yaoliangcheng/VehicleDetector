@@ -8,6 +8,7 @@
 #include "accelerate.h"
 #include "noise.h"
 #include "pressure.h"
+#include "analog.h"
 
 /******************************************************************************/
 typedef enum
@@ -21,6 +22,8 @@ typedef enum
 	PROCESS_MODE_DETECTED_NOISE,					/* À®°È¼ì²â */
 	PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE,		/* ²à»¬Á¿¼ì²â */
 	PROCESS_MODE_DETECTED_DOWN_VELOCITY,			/* »õ²æÏÂ½µËÙ¶È¼ì²â */
+	PROCESS_MODE_DETECTED_BAT_VOLTAGE,				/* ï®µç³ØµçÁ¿¼ì²â */
+
 } PROCESS_ModeEnum;
 
 /******************************************************************************/
