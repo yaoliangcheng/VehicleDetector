@@ -1,4 +1,5 @@
 #include "noise.h"
+#include "ble.h"
 
 /******************************************************************************/
 /* ‘Î…˘«Î«Û÷∏¡Ó */
@@ -35,6 +36,7 @@ void NOISE_Process(void)
 {
 	uint16_t noiseValue = 0;
 	float    noise = 0.0;
+	char value[7];
 
 	if (ENABLE == NOISE_Recv.status)
 	{
@@ -47,14 +49,15 @@ void NOISE_Process(void)
 			noiseValue = (NOISE_Recv.buffer.dataH << 8) | NOISE_Recv.buffer.dataL;
 			noise = (((uint32_t)noiseValue * NOISE_MODULE_RANGE_DB)
 						/ (float)65535) + NOISE_MODULE_RANGE_DB_MIN;
-#if DEVICE_TEST_MODE_ENABLE
-			printf("‘Î…˘ƒ£øÈ÷µ=%d£¨‘Î…˘=%.1f", noiseValue, noise);
-#else
+
+			sprintf(value, "%6.1f", noise);
+#if DEVICE_OLED_DISPLAY_ENABLE
 
 #endif
+#if DEVICE_BLE_SEND_ENABLE
+			BLE_SendBytes(BLE_DATA_TYPE_NOISE, value);
+#endif
 		}
-
-
 	}
 }
 

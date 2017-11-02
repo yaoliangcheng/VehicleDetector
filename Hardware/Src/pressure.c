@@ -1,7 +1,12 @@
 #include "pressure.h"
+#include "ble.h"
+#include "oled.h"
 
 /******************************************************************************/
 PRESSURE_ParamTypedef PRESSURE_Param;
+
+extern ItemValueTypedef     ItemValue;
+extern ItemZeroValueTypedef ItemZeroValue;
 
 /******************************************************************************/
 static uint32_t HX711_ReadValue(void);
@@ -36,29 +41,33 @@ void PRESSURE_Init(void)
  */
 void PRESSURE_GetPedalForce(void)
 {
-	double pedal = 0.0;
-	uint32_t value = 0;
+	uint32_t data = 0;
+	char value[7];
 
 	/* 获取24bitAD值 */
-	value = HX711_ReadValue();
+	data = HX711_ReadValue();
 	/* 判断AD值合法 */
-	if (value > PRESSURE_Param.pedalValueMin)
+	if (data > PRESSURE_Param.pedalValueMin)
 	{
-		value -= PRESSURE_Param.pedalValueMin;
+		data -= PRESSURE_Param.pedalValueMin;
 	}
 	else
 	{
-		value = 0;
+		data = 0;
 	}
 	/* 转换踏板力值 */
-	pedal = (value / (double)PRESSURE_Param.pedalValueRange)
+	ItemValue.pedalForce = (data / (double)PRESSURE_Param.pedalValueRange)
 			* PRESSURE_RANGE_PEDAL_FORCE;
 
-#if DEVICE_TEST_MODE_ENABLE
-//	printf("HX711=%d,%x\r\n", value, value);
-	printf("踏板力=%.1fN\r\n", pedal);
-#else
+	/* 零点校准 */
+	ItemValue.pedalForce -= ItemZeroValue.pedalForce;
 
+	sprintf(value, "%6.1f", ItemValue.pedalForce);
+#if DEVICE_OLED_DISPLAY_ENABLE
+	OLED_ShowString(56, 2, value, sizeof(value));
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+	BLE_SendBytes(BLE_DATA_TYPE_PEDAL_FORCE, value);
 #endif
 }
 
@@ -67,29 +76,34 @@ void PRESSURE_GetPedalForce(void)
  */
 void PRESSURE_GetSteeringWheelForce(void)
 {
-	double steeringWheelForce = 0.0;
-	uint32_t value = 0;
+	uint32_t data = 0;
+	char value[7];
 
 	/* 获取24bitAD值 */
-	value = HX711_ReadValue();
+	data = HX711_ReadValue();
 	/* 判断AD值合法 */
-	if (value > PRESSURE_Param.steeringWheelForceMin)
+	if (data > PRESSURE_Param.steeringWheelForceMin)
 	{
-		value -= PRESSURE_Param.steeringWheelForceMin;
+		data -= PRESSURE_Param.steeringWheelForceMin;
 	}
 	else
 	{
-		value = 0;
+		data = 0;
 	}
-	/* 转换踏板力值 */
-	steeringWheelForce = (value / (double)PRESSURE_Param.steeringWheelForceRange)
+	/* 转换转向力值 */
+	ItemValue.steeringWheelForce =
+			(data / (double)PRESSURE_Param.steeringWheelForceRange)
 			* PRESSURE_RANGE_STEERING_WHEEL_FORCE;
 
-#if DEVICE_TEST_MODE_ENABLE
-//	printf("HX711=%d,%x\r\n", value, value);
-	printf("转向力=%.1fN\r\n", steeringWheelForce);
-#else
+	/* 零点校准 */
+	ItemValue.steeringWheelForce -= ItemZeroValue.steeringWheelForce;
 
+	sprintf(value, "%6.1f", ItemValue.steeringWheelForce);
+#if DEVICE_OLED_DISPLAY_ENABLE
+	OLED_ShowString(56, 2, value, sizeof(value));
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_FORCE, value);
 #endif
 }
 
@@ -98,29 +112,34 @@ void PRESSURE_GetSteeringWheelForce(void)
  */
 void PRESSURE_GetHandBrakeForce(void)
 {
-	double handBrakeForce = 0.0;
-	uint32_t value = 0;
+	uint32_t data = 0;
+	char value[7];
 
 	/* 获取24bitAD值 */
-	value = HX711_ReadValue();
+	data = HX711_ReadValue();
 	/* 判断AD值合法 */
-	if (value > PRESSURE_Param.handBrakeForceMin)
+	if (data > PRESSURE_Param.handBrakeForceMin)
 	{
-		value -= PRESSURE_Param.handBrakeForceMin;
+		data -= PRESSURE_Param.handBrakeForceMin;
 	}
 	else
 	{
-		value = 0;
+		data = 0;
 	}
 	/* 转换踏板力值 */
-	handBrakeForce = (value / (double)PRESSURE_Param.handBrakeForceRange)
+	ItemValue.handBrakeForce =
+			(data / (double)PRESSURE_Param.handBrakeForceRange)
 			* PRESSURE_RANGE_HAND_BRAKE_FORCE;
 
-#if DEVICE_TEST_MODE_ENABLE
-//	printf("HX711=%d,%x\r\n", value, value);
-	printf("手刹力=%.1fN\r\n", handBrakeForce);
-#else
+	/* 零点校准 */
+	ItemValue.handBrakeForce -= ItemZeroValue.handBrakeForce;
 
+	sprintf(value, "%6.1f", ItemValue.handBrakeForce);
+#if DEVICE_OLED_DISPLAY_ENABLE
+	OLED_ShowString(56, 2, value, sizeof(value));
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+	BLE_SendBytes(BLE_DATA_TYPE_HAND_BRAKE_FORCE, value);
 #endif
 }
 

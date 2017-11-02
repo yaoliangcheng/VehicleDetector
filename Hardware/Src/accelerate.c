@@ -1,16 +1,18 @@
 #include "accelerate.h"
+#include "ble.h"
+#include "oled.h"
 
 /******************************************************************************/
 uint8_t ACCELERATE_RecvBytes[ACCELERATE_UART_RX_BYTE_MAX];
 ACCELERATE_RecvTypedef       ACCELERATE_Recv;
 ACCELERATE_SendStrcutTypedef ACCELERATE_SendStrcut;
-ACCELERATE_ParamTypedef      ACCELERATE_Param;
+
+extern ItemValueTypedef     ItemValue;
+extern ItemZeroValueTypedef ItemZeroValue;
 
 /******************************************************************************/
-static uint8_t CheckSum(uint8_t* buffer);
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer);
-static void ACCELERATE_SendCmd(ACCELERATE_AddrEnum addr, uint8_t dataL, uint8_t dataH);
 
 /*******************************************************************************
  * @brief 加速度模块初始化
@@ -41,56 +43,20 @@ void ACCELERATE_Process(void)
 			return;
 
 		/* 校验和 */
-		if (ACCELERATE_Recv.buffer.sum != CheckSum((uint8_t*)&ACCELERATE_Recv.buffer))
-			return;
+//		if (ACCELERATE_Recv.buffer.sum != CheckSum((uint8_t*)&ACCELERATE_Recv.buffer))
+//			return;
 
 		/* 判断数据类型 */
 		switch (ACCELERATE_Recv.buffer.type)
 		{
-		/* 时间输出 */
-		case ACCELERATE_TYPE_DATE:
-			break;
-
 		/* 加速度输出 */
 		case ACCELERATE_TYPE_ACCELERATE_SPEED:
 			AccelerateSpeedProcess(&ACCELERATE_Recv.buffer);
 			break;
 
-		/* 角速度输出 */
-		case ACCELERATE_TYPE_ANGULAR_SPEED:
-			break;
-
 		/* 角度输出 */
 		case ACCELERATE_TYPE_ANGLE:
 			AccelerateAngleProcess(&ACCELERATE_Recv.buffer);
-			break;
-
-		/* 磁场输出 */
-		case ACCELERATE_TYPE_MAGNETIC_FIELD:
-			break;
-
-		/* 端口状态数据输出 */
-		case ACCELERATE_TYPE_PORT_STATUS:
-			break;
-
-		/* 气压、高度输出 */
-		case ACCELERATE_TYPE_AIR_PRESS_AND_ALTITUDE:
-			break;
-
-		/* 经纬度输出 */
-		case ACCELERATE_TYPE_LONGITUDE_AND_LATITUDE:
-			break;
-
-		/* 地速输出 */
-		case ACCELERATE_TYPE_GROUND_SPEED:
-			break;
-
-		/* 四元素输出 */
-		case ACCELERATE_TYPE_FOUR_ELEMENTS:
-			break;
-
-		/* 卫星定位精度输出 */
-		case ACCELERATE_TYPE_LOCATION:
 			break;
 
 		default:
@@ -117,7 +83,11 @@ void ACCELERATE_Process(void)
  */
 void ACCELERATE_SetBackInfo(uint8_t RSWL, uint8_t RSWH)
 {
-	ACCELERATE_SendCmd(ACCELERATE_ADDR_RSW, RSWL, RSWH);
+	ACCELERATE_SendStrcut.address = ACCELERATE_ADDR_RSW;
+	ACCELERATE_SendStrcut.dataL   = RSWL;
+	ACCELERATE_SendStrcut.dataH   = RSWH;
+	HAL_UART_Transmit_DMA(&ACCELERATE_UART, (uint8_t*)&ACCELERATE_SendStrcut,
+			sizeof(ACCELERATE_SendStrcutTypedef));
 }
 
 /*******************************************************************************
@@ -153,35 +123,6 @@ void ACCELERATE_UartIdleDeal(void)
 }
 
 /*******************************************************************************
- *
- */
-static void ACCELERATE_SendCmd(ACCELERATE_AddrEnum addr, uint8_t dataL, uint8_t dataH)
-{
-	ACCELERATE_SendStrcut.address = addr;
-	ACCELERATE_SendStrcut.dataL   = dataL;
-	ACCELERATE_SendStrcut.dataH   = dataH;
-	HAL_UART_Transmit_DMA(&ACCELERATE_UART, (uint8_t*)&ACCELERATE_SendStrcut,
-			sizeof(ACCELERATE_SendStrcutTypedef));
-}
-
-/*******************************************************************************
- * @brief 计算校验和
- */
-static uint8_t CheckSum(uint8_t* buffer)
-{
-	uint8_t index;
-	uint8_t sum = 0;
-
-	for (index = 0; index < (sizeof(ACCELERATE_RecvStrcutTypedef) - 1); index++)
-	{
-		sum += *buffer;
-		buffer++;
-	}
-
-	return sum;
-}
-
-/*******************************************************************************
  * @brief 根据计算方法获取加速度值
  */
 static double GetAccelerateSpeed(int16_t data)
@@ -214,33 +155,35 @@ static float GetAngleValue(int16_t data)
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 {
 	double Ax = 0.0;
+	char value[7];
 
 	/* x轴加速度在data1位置 */
 	Ax = GetAccelerateSpeed(buffer->data1);
 
 	if (fabs(Ax) > 0.5)
 	{
-		ACCELERATE_Param.velocity += Ax * ACCELERATE_INTEGRAL_TIME;
-		ACCELERATE_Param.distance += ACCELERATE_Param.velocity
-				* ACCELERATE_INTEGRAL_TIME;
+		ItemValue.brakeVelocity += Ax * ACCELERATE_INTEGRAL_TIME;
 
 		if (Ax < 0)
 		{
-			ACCELERATE_Param.brakeDistance += ACCELERATE_Param.velocity
+			ItemValue.brakeVelocityInit = ItemValue.brakeVelocity;
+			ItemValue.brakeDistance += ItemValue.brakeVelocity
 					* ACCELERATE_INTEGRAL_TIME;
 		}
 		else
 		{
-			ACCELERATE_Param.brakeDistance = 0;
+			ItemValue.brakeVelocityInit = 0;
+			ItemValue.brakeDistance     = 0;
 		}
 	}
 
-#if DEVICE_TEST_MODE_ENABLE
-	printf("x轴加速度=%.1f，速度=%.1f，距离=%.1f，制动距离=%.1f\r\n",
-			Ax, ACCELERATE_Param.velocity,
-			ACCELERATE_Param.distance, ACCELERATE_Param.brakeDistance);
-#else
+	/* 显示实时速度 */
+	sprintf(value, "%6.1f", ItemValue.brakeVelocity);
+#if DEVICE_OLED_DISPLAY_ENABLE
 
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+	BLE_SendBytes(BLE_DATA_TYPE_BRAKING_INITIAL_VELOCITY, value);
 #endif
 }
 
@@ -251,11 +194,18 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
  */
 static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 {
-	float angle;
+	char value[7];
 
 	/* 当前的角度值 - 零位值 */
-	angle = GetAngleValue(buffer->data3) - ACCELERATE_Param.angleZero;
+	ItemValue.steeringWheelAngle = GetAngleValue(buffer->data3);
+	ItemValue.steeringWheelAngle -= ItemZeroValue.steeringWheelAngle;
 
-	printf("方向盘角度=%.1f\r\n", angle);
+	sprintf(value, "%6.1f", ItemValue.steeringWheelAngle);
+#if DEVICE_OLED_DISPLAY_ENABLE
+	OLED_ShowString(56, 2, value, 5);
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_ANGLE, value);
+#endif
 }
 

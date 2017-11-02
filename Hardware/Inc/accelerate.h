@@ -150,14 +150,6 @@ typedef struct
 	FunctionalState status;						/* 接收状态 */
 } ACCELERATE_RecvTypedef;
 
-typedef struct
-{
-	double velocity;							/* 速度 */
-	double distance;							/* 距离（总位移） */
-	double brakeDistance;						/* 制动距离 */
-	float angleZero;							/* 方向盘角度零位 */
-} ACCELERATE_ParamTypedef;						/* 加速度传感器的参数 */
-
 #pragma pack()
 /******************************************************************************/
 void ACCELERATE_Init(void);

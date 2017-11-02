@@ -14,6 +14,8 @@
 #define BLE_UART_RX_BYTE_MAX			(30)		/* 加速度传感器串口最大接收字节长度 */
 #define BLE_UART_DMA_RX_GL_FLAG			(DMA_FLAG_GL3)
 
+#define BLE_PROTOCOL_HEAD				(0xAA)
+#define BLE_PROTOCOL_TAIL				(0x55)
 /******************************************************************************/
 typedef enum
 {
@@ -30,8 +32,8 @@ typedef enum
 	BLE_CMD_TYPE_DETECTED_NOISE,						/* 开启喇叭检测 */
 	BLE_CMD_TYPE_DETECTED_SIDESLIP_DISTANCE,			/* 开启侧滑量检测 */
 	BLE_CMD_TYPE_DETECTED_DOWN_VELOCITY,				/* 开启货叉下降速度检测 */
-	BLE_CMD_TYPE_DETECTED_BAT_VOLTAGE,					/* 开启电池电量检测 */
-
+	BLE_CMD_TYPE_DETECTED_BATTERY_CAPACITY,				/* 开启电池电量检测 */
+	
 	/* 方向盘转向力 */
 	BLE_DATA_TYPE_STEERING_WHEEL_FORCE = 0x10,			/* 实时转向力值 */
 	BLE_DATA_TYPE_STEERING_WHEEL_FORCE_MAX,				/* 最大转向力值 */
@@ -65,6 +67,9 @@ typedef enum
 	BLE_DATA_TYPE_DOWN_DISTANCE = 0x80,					/* 货叉离地距离 */
 	BLE_DATA_TYPE_DOWN_VELOCITY,						/* 实时货叉下降速度 */
 	BLE_DATA_TYPE_DOWN_VELOCITY_MAX,					/* 货叉最大下降速度 */
+
+	/* 锂电池电量 */
+	BLE_DATA_TYPE_BATTERY_CAPACITY = 0X90,				/* 电池电量 */
 } BLE_CmdDataTypeEnum;
 
 typedef enum
@@ -81,15 +86,32 @@ typedef enum
 
 /******************************************************************************/
 #pragma pack(1)
+
 typedef struct
 {
-	uint8_t buffer[BLE_UART_RX_BYTE_MAX];				/* 接收二级缓存 */
-//	ACCELERATE_RecvStrcutTypedef buffer;
-	uint8_t size;										/* 接收数据的长度 */
-	FunctionalState status;								/* 接收状态 */
+	uint8_t head;						/* 帧头 */
+	uint8_t cmdType;					/* 数据类型 */
+	uint8_t cmdSubType;					/* 数据子类型 */
+	uint8_t verify;						/* 校验 */
+	uint8_t tail;						/* 帧尾 */
+} BLE_RecvStruct;
+
+typedef struct
+{
+	BLE_RecvStruct buffer;				/* 接收二级缓存 */
+	uint8_t size;						/* 接收数据的长度 */
+	FunctionalState status;				/* 接收状态 */
 } BLE_RecvTypedef;
 
-
+typedef struct
+{
+	uint8_t head;						/* 帧头 */
+	uint8_t type;						/* 数据类型 */
+	uint8_t length;						/* 数据长度 */
+	char    data[6];					/* 数据（ASCII） 数据范围-999.9~9999.9*/
+	uint8_t verify;						/* 校验和 */
+	uint8_t tail;						/* 帧尾 */
+} BLE_SendStructTypedef;				/* 蓝牙发送结构体 */
 
 #pragma pack()
 
@@ -97,5 +119,6 @@ typedef struct
 void BLE_Init(void);
 void BLE_UartIdleDeal(void);
 void BLE_Process(void);
+void BLE_SendBytes(BLE_CmdDataTypeEnum type, char* value);
 
 #endif

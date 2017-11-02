@@ -22,14 +22,37 @@ typedef enum
 	PROCESS_MODE_DETECTED_NOISE,					/* 喇叭检测 */
 	PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE,		/* 侧滑量检测 */
 	PROCESS_MODE_DETECTED_DOWN_VELOCITY,			/* 货叉下降速度检测 */
-	PROCESS_MODE_DETECTED_BAT_VOLTAGE,				/* 锂电池电量检测 */
-
+	PROCESS_MODE_DETECTED_BATTERY_CAPACITY,			/* 锂电池电量检测 */
 } PROCESS_ModeEnum;
+
+typedef struct
+{
+	double steeringWheelForce;						/* 方向盘转向力 */
+	double steeringWheelAngle;						/* 方向盘转角 */
+	double brakeVelocity;							/* 制动速度 */
+	double brakeVelocityInit;						/* 制动初速度 */
+	double brakeDistance;							/* 制动距离 */
+	double pedalForce;								/* 踏板力 */
+	double handBrakeForce;							/* 手刹力 */
+	float  noise;									/* 噪声值 */
+	double downVelocity;							/* 下降速度 */
+	uint8_t batteryCapacity;						/* 电池电量 */
+} ItemValueTypedef;
+
+typedef struct
+{
+	double steeringWheelForce;						/* 方向盘转向力零点值 */
+	double steeringWheelAngle;						/* 方向盘转角零点值 */
+	double pedalForce;								/* 踏板力零点值 */
+	double handBrakeForce;							/* 手刹力零点值 */
+	float  noise;									/* 噪声零点值 */
+} ItemZeroValueTypedef;
 
 /******************************************************************************/
 extern PROCESS_ModeEnum PROCESS_Mode;
 
 /******************************************************************************/
 void PROCESS(void);
+void ZeroCalibration(void);
 
 #endif

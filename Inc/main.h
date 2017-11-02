@@ -48,16 +48,28 @@
 
 #define LED_Pin GPIO_PIN_14
 #define LED_GPIO_Port GPIOC
-#define PRESSURE_DT_Pin GPIO_PIN_15
-#define PRESSURE_DT_GPIO_Port GPIOB
-#define PRESSURE_SCK_Pin GPIO_PIN_8
-#define PRESSURE_SCK_GPIO_Port GPIOA
-#define OLED_CLK_Pin GPIO_PIN_3
-#define OLED_CLK_GPIO_Port GPIOB
-#define OLED_DOUT_Pin GPIO_PIN_5
-#define OLED_DOUT_GPIO_Port GPIOB
-#define OLED_DC_Pin GPIO_PIN_7
+#define VBAT_IN_Pin GPIO_PIN_4
+#define VBAT_IN_GPIO_Port GPIOA
+#define PRESSURE_SCK_Pin GPIO_PIN_15
+#define PRESSURE_SCK_GPIO_Port GPIOB
+#define PRESSURE_DT_Pin GPIO_PIN_8
+#define PRESSURE_DT_GPIO_Port GPIOA
+#define BLE_RST_Pin GPIO_PIN_11
+#define BLE_RST_GPIO_Port GPIOA
+#define BLE_WKUP_Pin GPIO_PIN_12
+#define BLE_WKUP_GPIO_Port GPIOA
+#define BLE_EN_Pin GPIO_PIN_15
+#define BLE_EN_GPIO_Port GPIOA
+#define OLED_CS_Pin GPIO_PIN_3
+#define OLED_CS_GPIO_Port GPIOB
+#define OLED_DC_Pin GPIO_PIN_4
 #define OLED_DC_GPIO_Port GPIOB
+#define OLED_RST_Pin GPIO_PIN_5
+#define OLED_RST_GPIO_Port GPIOB
+#define OLED_DIN_Pin GPIO_PIN_6
+#define OLED_DIN_GPIO_Port GPIOB
+#define OLED_CLK_Pin GPIO_PIN_7
+#define OLED_CLK_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

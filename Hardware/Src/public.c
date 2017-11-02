@@ -38,3 +38,19 @@ HAL_StatusTypeDef UART_DMAIdleConfig(UART_HandleTypeDef *huart, uint8_t *pData, 
 
 	return HAL_OK;
 }
+
+/*******************************************************************************
+ * @brief 计算校验和
+ */
+uint8_t CheckSum(uint8_t* buffer, uint8_t size)
+{
+	uint8_t sum = 0;
+
+	while (size--)
+	{
+		sum += *buffer;
+		buffer++;
+	}
+
+	return sum;
+}

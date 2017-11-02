@@ -1,9 +1,11 @@
 #include "analog.h"
+#include "ble.h"
 
 /******************************************************************************/
 static uint16_t convertValueBuffer[ANALOG_SAMPLE_NUMB];
 static FunctionalState convertFinished = DISABLE;
-uint8_t ANALOG_BatVoltage = 0;
+
+extern ItemValueTypedef     ItemValue;
 
 /******************************************************************************/
 static uint16_t GetAverageValue(void);
@@ -32,18 +34,22 @@ void ANALOG_ConvertDisable(void)
  */
 void ANALOG_Process(void)
 {
-	uint16_t value;
+	uint16_t data;
+	char value[7];
 
 	if (ENABLE == convertFinished)
 	{
 		convertFinished = DISABLE;
 
-		value = GetAverageValue();
-		ANALOG_BatVoltage = GetBatVoltage(value);
+		data = GetAverageValue();
+		ItemValue.batteryCapacity = GetBatVoltage(data);
 
-#if DEVICE_TEST_MODE_ENABLE
-		printf("ï®µç³ØµçÁ¿=%d/%/r/n", ANALOG_BatVoltage);
-#else
+		sprintf(value, "%6d", ItemValue.batteryCapacity);
+#if DEVICE_OLED_DISPLAY_ENABLE
+
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+		BLE_SendBytes(BLE_DATA_TYPE_BATTERY_CAPACITY, value);
 #endif
 
 	}

@@ -70,6 +70,7 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+extern const char ChineseFont_Welcome[CHINESE_FONT_SIZE * 13];
 uint32_t value;
 /* USER CODE END 0 */
 
@@ -111,22 +112,10 @@ int main(void)
   BLE_Init();
   PRESSURE_Init();
   NOISE_Init();
-//  OLED_Init();			//³õÊ¼»¯OLED
-//	OLED_Clear()  	;
-//
-//	 OLED_ShowString(30,0,"OLED TEST");
-//	OLED_ShowString(8,2,"ZHONGJINGYUAN");
-//	OLED_ShowString(20,4,"2014/05/01");
-//	OLED_ShowString(0,6,"ASCII:");
-//	OLED_ShowString(63,6,"CODE:");
-//
-//	OLED_ShowCHinese(0,0,0);//ÖÐ
-//	OLED_ShowCHinese(18,0,1);//¾°
-//	OLED_ShowCHinese(36,0,2);//Ô°
-//	OLED_ShowCHinese(54,0,3);//µç
-//	OLED_ShowCHinese(72,0,4);//×Ó
-//	OLED_ShowCHinese(90,0,5);//¿Æ
-//	OLED_ShowCHinese(108,0,6);//¼¼
+
+  	OLED_Init();
+	OLED_ShowChineseString(0, 2, (char*)ChineseFont_Welcome,
+			sizeof(ChineseFont_Welcome) / 32);
 
   /* USER CODE END 2 */
 
@@ -146,6 +135,14 @@ int main(void)
 		  i = 0;
 		  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	  }
+
+//
+//		OLED_ShowString(0,3,"1.3' OLED TEST", 14);
+//		HAL_Delay(1000);
+//		OLED_DrawBMP(0,0,128,8,BMP1);
+//		HAL_Delay(1000);
+//		OLED_DrawBMP(0,0,128,8,BMP2);
+//		HAL_Delay(1000);
 
   }
   /* USER CODE END 3 */
