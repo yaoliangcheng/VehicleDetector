@@ -142,29 +142,37 @@ void BLE_Process(void)
 			PROCESS_Mode = PROCESS_MODE_DETECTED_BRAKING_DISTANCE;
 			/* 设置加速度信息回传 */
 			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ACCELERATE_SPEED_MARK, 0x00);
-
 			OLED_Clear();
 			OLED_ShowChineseString(0, 0, (char*)ChineseFont_BrakingDistance,
 					sizeof(ChineseFont_BrakingDistance) / CHINESE_FONT_SIZE);
 			OLED_ShowString(0, 2, "value = ", 8);
+			OLED_ShowString(104, 2, "km/h", 4);
+			OLED_ShowString(0, 4, "distance", 8);
+			OLED_ShowString(104, 4, "m", 1);
 			break;
 
 		/* 开启制动踏板力检测 */
 		case BLE_CMD_TYPE_DETECTED_PEDAL_FORCE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_PEDAL_FORCE;
 			OLED_Clear();
+			OLED_ShowString(0, 2, "value = ", 8);
+			OLED_ShowString(104, 2, "N", 1);
 			break;
 
 		/* 开启手刹制动力检测 */
 		case BLE_CMD_TYPE_DETECTED_HAND_BRAKE_FORCE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_HAND_BRAKE_FORCE;
 			OLED_Clear();
+			OLED_ShowString(0, 2, "value = ", 8);
+			OLED_ShowString(104, 2, "N", 1);
 			break;
 
 		/* 开启喇叭检测 */
 		case BLE_CMD_TYPE_DETECTED_NOISE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_NOISE;
 			OLED_Clear();
+			OLED_ShowString(0, 2, "value = ", 8);
+			OLED_ShowString(104, 2, "dB", 2);
 			break;
 
 		/* 开启侧滑量检测 */
