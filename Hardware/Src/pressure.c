@@ -13,7 +13,7 @@ extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 static uint32_t HX711_ReadValue(void);
 
 /*******************************************************************************
- *
+ * @brief 压力传感器参数初始化
  */
 void PRESSURE_Init(void)
 {
@@ -59,7 +59,7 @@ void PRESSURE_GetPedalForce(void)
 	/* 转换踏板力值 */
 	ItemValue.pedalForce = (data / (double)PRESSURE_Param.pedalValueRange)
 			* PRESSURE_RANGE_PEDAL_FORCE * 1.916;
-
+	/* 零点校准使能 */
 	if (ItemValueSetZeroEnable.pedalForce == ENABLE)
 	{
 		ItemValueSetZeroEnable.pedalForce = DISABLE;

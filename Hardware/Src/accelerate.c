@@ -20,7 +20,10 @@ static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer);
  */
 void ACCELERATE_Init(void)
 {
-	UART_DMAIdleConfig(&ACCELERATE_UART, ACCELERATE_RecvBytes, ACCELERATE_UART_RX_BYTE_MAX);
+	/* 初始化加速度传感器串口DMA接收 */
+	UART_DMAIdleConfig(&ACCELERATE_UART, ACCELERATE_RecvBytes,
+			ACCELERATE_UART_RX_BYTE_MAX);
+	/* 设定加速度发送数据的固定内容 */
 	ACCELERATE_SendStrcut.head1 = 0xFF;
 	ACCELERATE_SendStrcut.head2 = 0xAA;
 }
@@ -67,7 +70,7 @@ void ACCELERATE_Process(void)
 }
 
 /*******************************************************************************
- * @breif 设置回传内容
+ * @breif 设置加速度传感器回传内容
  * @param RSWL包含信息：
 			ACCELERATE_TYPE_DATE_MARK
 			ACCELERATE_TYPE_ACCELERATE_SPEED_MARK
@@ -92,7 +95,7 @@ void ACCELERATE_SetBackInfo(uint8_t RSWL, uint8_t RSWH)
 }
 
 /*******************************************************************************
- *
+ * @brief 串口DMA接收初始化
  */
 void ACCELERATE_UartIdleDeal(void)
 {
@@ -153,28 +156,19 @@ static float GetAngleValue(int16_t data)
  *
  * 		 测试发现：静止状态下，加速度值有±0.5的零点偏移，所以绝对值<0.5默认为静止，不积分
  */
-//double Ax = 0.0;
-//double Ay = 0.0;
-//double Az = 0.0;
-//double Axy = 0.0;
-double Speed = 0.0;
-
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 {
-//	double Ax = 0.0;
 	char value[7];
 
 	/* x轴加速度在data1位置 */
 	ItemValue.Ax = GetAccelerateSpeed(buffer->data1);
-//	Ay = GetAccelerateSpeed(buffer->data2);
-//	Az = GetAccelerateSpeed(buffer->data3);
-//	Axy = sqrt(Ax * Ax + Ay * Ay + Az * Az);
-//	Axy = sqrt(Ax * Ax + Ay * Ay);
-
+	/* 零点校准使能 */
 	if (ItemValueSetZeroEnable.brakeAx == ENABLE)
 	{
 		ItemValueSetZeroEnable.brakeAx = DISABLE;
+		/* 将当前值作为校准值 */
 		ItemZeroValue.Ax = ItemValue.Ax;
+		/* 校准后清空之前累加的值 */
 		ItemValue.brakeVelocity = 0;
 		ItemValue.brakeVelocityInit = 0;
 		ItemValue.brakeDistance = 0;
@@ -182,43 +176,48 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 
 	/* 加速度零点校准 */
 	ItemValue.Ax -= ItemZeroValue.Ax;
-
+	/* 避免零点噪声漂移，将绝对值小于0.5的值认为为静止，不积分 */
 	if (fabs(ItemValue.Ax) > 0.05)
 	{
+		/* 加速度积分获取速度 */
 		ItemValue.brakeVelocity += ItemValue.Ax * ACCELERATE_INTEGRAL_TIME;
-
-		Speed = ItemValue.brakeVelocity * 3.6;
-
+		/* 前进方向，速度不可能为负值 */
+		if (ItemValue.brakeVelocity < 0)
+		{
+			ItemValue.brakeVelocity = 0;
+		}
+		/* 速度单位转换成km/h */
+		ItemValue.speed = ItemValue.brakeVelocity * 3.6;
+		/* 加速度为负值，则机动车刹车，开始对速度积分，算位移 */
 		if (ItemValue.Ax < 0)
 		{
-			ItemValue.brakeVelocityInit = ItemValue.brakeVelocity;
 			ItemValue.brakeDistance += ItemValue.brakeVelocity
 					* ACCELERATE_INTEGRAL_TIME;
 		}
-		else
+		else	/* 否则则证明在加速过程，不累计位移 */
 		{
 			ItemValue.brakeVelocityInit = 0;
 			ItemValue.brakeDistance     = 0;
 		}
 	}
-	else
+	else	/* 默认为静止模式，速度为0 */
 	{
 		ItemValue.brakeVelocity = 0;
-		ItemValue.brakeVelocityInit  = 0;
-		ItemValue.brakeDistance = 0;
-		Speed = 0;
+//		ItemValue.brakeVelocityInit  = 0;
+//		ItemValue.brakeDistance = 0;
+		ItemValue.speed = 0;
 	}
 
 	/* 显示实时速度 */
-	sprintf(value, "%6.1f", Speed);
-#if DEVICE_OLED_DISPLAY_ENABLE
-	OLED_ShowString(64, 2, value, 6);
-#endif
-#if DEVICE_BLE_SEND_ENABLE
-	BLE_SendBytes(BLE_DATA_TYPE_BRAKING_INITIAL_VELOCITY, value);
-#endif
+//	sprintf(value, "%6.1f", Speed);
+//#if DEVICE_OLED_DISPLAY_ENABLE
+//	OLED_ShowString(64, 2, value, 6);
+//#endif
+//#if DEVICE_BLE_SEND_ENABLE
+//	BLE_SendBytes(BLE_DATA_TYPE_BRAKING_INITIAL_VELOCITY, value);
+//#endif
 
-	/* 显示实时速度 */
+	/* 显示实时位移 */
 	sprintf(value, "%6.1f", ItemValue.brakeDistance);
 #if DEVICE_OLED_DISPLAY_ENABLE
 	OLED_ShowString(64, 4, value, 6);
@@ -237,17 +236,18 @@ static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 {
 	char value[7];
 
-	/* 当前的角度值 - 零位值 */
+	/* 获取当前的角度值 */
 	ItemValue.steeringWheelAngle = GetAngleValue(buffer->data3);
-
+	/* 零点校准使能 */
 	if (ItemValueSetZeroEnable.steeringWheelAngle == ENABLE)
 	{
 		ItemValueSetZeroEnable.steeringWheelAngle = DISABLE;
 		ItemZeroValue.steeringWheelAngle = ItemValue.steeringWheelAngle;
 	}
-
+	/* 零点校准 */
 	ItemValue.steeringWheelAngle -= ItemZeroValue.steeringWheelAngle;
 
+	/* 输出显示 */
 	sprintf(value, "%6.1f", ItemValue.steeringWheelAngle);
 #if DEVICE_OLED_DISPLAY_ENABLE
 	OLED_ShowString(64, 2, value, 6);

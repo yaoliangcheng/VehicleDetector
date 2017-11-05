@@ -31,6 +31,7 @@ typedef struct
 	double steeringWheelAngle;						/* 方向盘转角 */
 	double Ax;										/* 加速度 */
 	double brakeVelocity;							/* 制动速度 */
+	double speed;									/* 制动速度（单位km/h） */
 	double brakeVelocityInit;						/* 制动初速度 */
 	double brakeDistance;							/* 制动距离 */
 	double pedalForce;								/* 踏板力 */

@@ -32,18 +32,19 @@ void ANALOG_ConvertDisable(void)
 }
 
 /*******************************************************************************
- *
+ * @brief 模拟量转换进程
  */
 void ANALOG_Process(void)
 {
 	uint16_t data;
 	char value[7];
-
+	/* 等待转换结束 */
 	if (ENABLE == convertFinished)
 	{
 		convertFinished = DISABLE;
-
+		/* 获取模拟量的值 */
 		data = GetAverageValue();
+		/* 获取电池电量值 */
 		ItemValue.batteryCapacity = GetBatVoltage(data);
 
 		sprintf(value, "%6d", ItemValue.batteryCapacity);
@@ -58,7 +59,8 @@ void ANALOG_Process(void)
 }
 
 /*******************************************************************************
- *
+ * @brief 冒泡法排序滤波算法
+ * 		算法：采样20个值，将20个值从大到小排序，去中间的10个值取平均
  */
 static uint16_t GetAverageValue(void)
 {
@@ -81,7 +83,7 @@ static uint16_t GetAverageValue(void)
 	}
 
 	/* 清空平均值 */
-		average = RESET;
+	average = RESET;
 
 	/* 取中间的数值的平均数 */
 	for(j = ANALOG_SAMPLE_NUMB / 2 - 5; j < ANALOG_SAMPLE_NUMB / 2 + 5; j++)

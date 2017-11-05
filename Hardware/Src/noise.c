@@ -15,7 +15,7 @@ extern ItemZeroValueTypedef ItemZeroValue;
 extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
 /*******************************************************************************
- *
+ * @brief 噪音模块初始化
  */
 void NOISE_Init(void)
 {
@@ -23,7 +23,7 @@ void NOISE_Init(void)
 }
 
 /*******************************************************************************
- *
+ * @brief 请求噪音数据
  */
 void NOISE_Require(void)
 {
@@ -45,22 +45,21 @@ void NOISE_Process(void)
 	if (ENABLE == NOISE_Recv.status)
 	{
 		NOISE_Recv.status = DISABLE;
-
+		/* 校验噪音数据 */
 		if ((NOISE_Recv.buffer.addr == NOISE_MODULE_ADDR)
 			&& (NOISE_Recv.buffer.cmdType == NOISE_MODULE_CMD_TYPE)
 			&& (NOISE_Recv.buffer.dataLength == NOISE_MODULE_DATA_LENGTH))
 		{
 			noiseValue = (NOISE_Recv.buffer.dataH << 8) | NOISE_Recv.buffer.dataL;
-//			noise = (((uint32_t)noiseValue * NOISE_MODULE_RANGE_DB)
-//						/ (float)65535) + NOISE_MODULE_RANGE_DB_MIN;
+			/* 噪音值 = 数据 * 0.1 */
 			ItemValue.noise = ((float)noiseValue * 0.1);
-
+			/* 零点校准使能 */
 			if (ItemValueSetZeroEnable.noise == ENABLE)
 			{
 				ItemValueSetZeroEnable.noise = DISABLE;
 				ItemZeroValue.noise = ItemValue.noise;
 			}
-
+			/* 零点校准 */
 			ItemValue.noise -= ItemZeroValue.noise;
 
 			sprintf(value, "%6.1f", ItemValue.noise);
@@ -75,7 +74,7 @@ void NOISE_Process(void)
 }
 
 /*******************************************************************************
- *
+ * @brief 噪音串口接收处理
  */
 void NOISE_UartIdleDeal(void)
 {

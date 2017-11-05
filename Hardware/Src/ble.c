@@ -19,18 +19,20 @@ extern const char ChineseFont_SteeringWheelAngle[CHINESE_FONT_SIZE * 5];
 extern const char ChineseFont_BrakingDistance[CHINESE_FONT_SIZE * 4];
 
 /*******************************************************************************
- *
+ * @brief 蓝牙初始化
  */
 void BLE_Init(void)
 {
+	/* 蓝牙发送结构体固定值 */
 	BLE_SendStruct.head = BLE_PROTOCOL_HEAD;
 	BLE_SendStruct.length = 6;
 	BLE_SendStruct.tail = BLE_PROTOCOL_TAIL;
+	/* 蓝牙串口DMA接收初始化 */
 	UART_DMAIdleConfig(&BLE_UART, BLE_RecvBytes, BLE_UART_RX_BYTE_MAX);
 }
 
 /*******************************************************************************
- *
+ * @brief 蓝牙串口DMA接收初始化
  */
 void BLE_UartIdleDeal(void)
 {
@@ -60,17 +62,21 @@ void BLE_UartIdleDeal(void)
 }
 
 /*******************************************************************************
- *
+ * @brief 蓝牙数据透传
  */
 void BLE_SendBytes(BLE_CmdDataTypeEnum type, char* value)
 {
+	/* 将发送的数据缓存到发送缓存 */
 	memcpy(BLE_SendStruct.data, value, sizeof(BLE_SendStruct.data));
+	/* 数据类型 */
 	BLE_SendStruct.type = type;
+	/* 计算校验和 */
 	BLE_SendStruct.verify = CheckSum(&BLE_SendStruct.type, 7);
-//	HAL_UART_Transmit_DMA(&BLE_UART, (uint8_t*)&BLE_SendStruct,
-//					sizeof(BLE_SendStructTypedef));
-	HAL_UART_Transmit(&BLE_UART, (uint8_t*)&BLE_SendStruct,
-					sizeof(BLE_SendStructTypedef), 1000);
+	/* 串口发送 */
+	HAL_UART_Transmit_DMA(&BLE_UART, (uint8_t*)&BLE_SendStruct,
+					sizeof(BLE_SendStructTypedef));
+//	HAL_UART_Transmit(&BLE_UART, (uint8_t*)&BLE_SendStruct,
+//					sizeof(BLE_SendStructTypedef), 1000);
 }
 
 /*******************************************************************************
@@ -82,17 +88,13 @@ void BLE_Process(void)
 	{
 		BLE_Recv.status = DISABLE;
 
-//#if DEVICE_TEST_MODE_ENABLE
-		/* 如果是测试模式，判断第一个字节 */
-//		switch (BLE_Recv.buffer.head)
-
 		/* 根据协议判断 */
 		if ((BLE_Recv.buffer.head != BLE_PROTOCOL_HEAD)
 				|| (BLE_Recv.buffer.tail != BLE_PROTOCOL_TAIL))
 			return;
 		if (CheckSum(&BLE_Recv.buffer.cmdType, 2) != BLE_Recv.buffer.verify)
 			return;
-//#endif
+		/* 判断命令类型 */
 		switch (BLE_Recv.buffer.cmdType)
 		{
 		/* 传感器零位校正 */

@@ -67,7 +67,6 @@ void PROCESS(void)
 	}
 }
 
-uint8_t brakeAxInitFlag = 0;
 /*******************************************************************************
  * @breif 根据不同模式，选择当前模式下的当前状态为该零点值
  */
@@ -102,30 +101,9 @@ void ZeroCalibration(void)
 
 	case PROCESS_MODE_DETECTED_BRAKING_DISTANCE:
 		ItemValueSetZeroEnable.brakeAx = ENABLE;
-//		ItemZeroValue.Ax = ItemValue.Ax;
-//		ItemValue.brakeVelocity = 0;
-//		ItemValue.brakeVelocityInit = 0;
-//		ItemValue.brakeDistance = 0;
 		break;
 
 	default:
 		break;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
