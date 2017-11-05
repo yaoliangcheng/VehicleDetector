@@ -4,6 +4,7 @@
 PROCESS_ModeEnum PROCESS_Mode = PROCESS_MODE_INVALID;
 ItemValueTypedef     ItemValue;
 ItemZeroValueTypedef ItemZeroValue;
+ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
 /*******************************************************************************
  *
@@ -66,6 +67,7 @@ void PROCESS(void)
 	}
 }
 
+uint8_t brakeAxInitFlag = 0;
 /*******************************************************************************
  * @breif 根据不同模式，选择当前模式下的当前状态为该零点值
  */
@@ -75,27 +77,35 @@ void ZeroCalibration(void)
 	{
 	/* 方向盘转向力检测 */
 	case PROCESS_MODE_DETECTED_STEERING_WHEEL_FORCE:
-		ItemZeroValue.steeringWheelForce = ItemValue.steeringWheelForce;
+		ItemValueSetZeroEnable.steeringWheelForce = ENABLE;
 		break;
 
 	/* 方向盘转角检测 */
 	case PROCESS_MODE_DETECTED_STEERING_WHEEL_ANGLE:
-		ItemZeroValue.steeringWheelAngle = ItemValue.steeringWheelAngle;
+		ItemValueSetZeroEnable.steeringWheelAngle = ENABLE;
 		break;
 
 	/* 制动踏板力检测 */
 	case PROCESS_MODE_DETECTED_PEDAL_FORCE:
-		ItemZeroValue.pedalForce = ItemValue.pedalForce;
+		ItemValueSetZeroEnable.pedalForce = ENABLE;
 		break;
 
 	/* 手刹制动力检测 */
 	case PROCESS_MODE_DETECTED_HAND_BRAKE_FORCE:
-		ItemZeroValue.handBrakeForce = ItemValue.handBrakeForce;
+		ItemValueSetZeroEnable.handBrakeForce = ENABLE;
 		break;
 
 	/* 喇叭检测 */
 	case PROCESS_MODE_DETECTED_NOISE:
-		ItemZeroValue.noise = ItemValue.noise;
+		ItemValueSetZeroEnable.noise = ENABLE;
+		break;
+
+	case PROCESS_MODE_DETECTED_BRAKING_DISTANCE:
+		ItemValueSetZeroEnable.brakeAx = ENABLE;
+//		ItemZeroValue.Ax = ItemValue.Ax;
+//		ItemValue.brakeVelocity = 0;
+//		ItemValue.brakeVelocityInit = 0;
+//		ItemValue.brakeDistance = 0;
 		break;
 
 	default:

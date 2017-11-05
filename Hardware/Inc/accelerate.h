@@ -27,7 +27,7 @@
 #define ACCELERATE_TYPE_FOUR_ELEMENTS_MARK			(1 << 1)	/* 四元素输出 */
 #define ACCELERATE_TYPE_LOCATION_MARK				(1 << 2)	/* 卫星定位精度输出 */
 
-#define ACCELERATE_INTEGRAL_TIME				(0.01)		/* 积分时间为10ms */
+#define ACCELERATE_INTEGRAL_TIME				(0.1)		/* 积分时间为100ms */
 
 #define ACCELERATE_DIGITAL_RANGE		(double)(32768)	  /* 数字范围，强转double */
 #define ACCELERATE_RANGE_ACCELERATE		(double)(16 * 9.8) /* 加速度范围 */

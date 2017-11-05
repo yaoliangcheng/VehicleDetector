@@ -1,5 +1,7 @@
 #include "analog.h"
 #include "ble.h"
+#include "oled.h"
+
 
 /******************************************************************************/
 static uint16_t convertValueBuffer[ANALOG_SAMPLE_NUMB];
@@ -46,7 +48,7 @@ void ANALOG_Process(void)
 
 		sprintf(value, "%6d", ItemValue.batteryCapacity);
 #if DEVICE_OLED_DISPLAY_ENABLE
-
+		OLED_ShowString(64, 2, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
 		BLE_SendBytes(BLE_DATA_TYPE_BATTERY_CAPACITY, value);

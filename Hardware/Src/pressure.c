@@ -7,6 +7,7 @@ PRESSURE_ParamTypedef PRESSURE_Param;
 
 extern ItemValueTypedef     ItemValue;
 extern ItemZeroValueTypedef ItemZeroValue;
+extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
 /******************************************************************************/
 static uint32_t HX711_ReadValue(void);
@@ -57,7 +58,13 @@ void PRESSURE_GetPedalForce(void)
 	}
 	/* 转换踏板力值 */
 	ItemValue.pedalForce = (data / (double)PRESSURE_Param.pedalValueRange)
-			* PRESSURE_RANGE_PEDAL_FORCE;
+			* PRESSURE_RANGE_PEDAL_FORCE * 1.916;
+
+	if (ItemValueSetZeroEnable.pedalForce == ENABLE)
+	{
+		ItemValueSetZeroEnable.pedalForce = DISABLE;
+		ItemZeroValue.pedalForce = ItemValue.pedalForce;
+	}
 
 	/* 零点校准 */
 	ItemValue.pedalForce -= ItemZeroValue.pedalForce;
@@ -69,6 +76,8 @@ void PRESSURE_GetPedalForce(void)
 #if DEVICE_BLE_SEND_ENABLE
 	BLE_SendBytes(BLE_DATA_TYPE_PEDAL_FORCE, value);
 #endif
+
+	HAL_Delay(10);
 }
 
 /*******************************************************************************
@@ -93,7 +102,13 @@ void PRESSURE_GetSteeringWheelForce(void)
 	/* 转换转向力值 */
 	ItemValue.steeringWheelForce =
 			(data / (double)PRESSURE_Param.steeringWheelForceRange)
-			* PRESSURE_RANGE_STEERING_WHEEL_FORCE;
+			* PRESSURE_RANGE_STEERING_WHEEL_FORCE * 5.44;
+
+	if (ItemValueSetZeroEnable.steeringWheelForce == ENABLE)
+	{
+		ItemValueSetZeroEnable.steeringWheelForce = DISABLE;
+		ItemZeroValue.steeringWheelForce = ItemValue.steeringWheelForce;
+	}
 
 	/* 零点校准 */
 	ItemValue.steeringWheelForce -= ItemZeroValue.steeringWheelForce;
@@ -105,6 +120,8 @@ void PRESSURE_GetSteeringWheelForce(void)
 #if DEVICE_BLE_SEND_ENABLE
 	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_FORCE, value);
 #endif
+
+	HAL_Delay(10);
 }
 
 /*******************************************************************************
@@ -131,6 +148,12 @@ void PRESSURE_GetHandBrakeForce(void)
 			(data / (double)PRESSURE_Param.handBrakeForceRange)
 			* PRESSURE_RANGE_HAND_BRAKE_FORCE;
 
+	if (ItemValueSetZeroEnable.handBrakeForce == ENABLE)
+	{
+		ItemValueSetZeroEnable.handBrakeForce = DISABLE;
+		ItemZeroValue.handBrakeForce = ItemValue.handBrakeForce;
+	}
+
 	/* 零点校准 */
 	ItemValue.handBrakeForce -= ItemZeroValue.handBrakeForce;
 
@@ -141,6 +164,8 @@ void PRESSURE_GetHandBrakeForce(void)
 #if DEVICE_BLE_SEND_ENABLE
 	BLE_SendBytes(BLE_DATA_TYPE_HAND_BRAKE_FORCE, value);
 #endif
+
+	HAL_Delay(10);
 }
 
 /*******************************************************************************
@@ -148,7 +173,7 @@ void PRESSURE_GetHandBrakeForce(void)
  */
 static uint32_t ReadValue(void)
 {
-	uint64_t value = 0;
+	uint32_t value = 0;
 	uint8_t  i;
 
 	/* 拉低DSCK脚，使能AD转换 */

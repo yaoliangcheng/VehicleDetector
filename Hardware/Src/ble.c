@@ -8,6 +8,9 @@ BLE_RecvTypedef BLE_Recv;
 uint8_t BLE_sendBuffer[BLE_UART_RX_BYTE_MAX];
 BLE_SendStructTypedef BLE_SendStruct;
 
+extern ItemZeroValueTypedef ItemZeroValue;
+extern ItemValueTypedef     ItemValue;
+
 extern const char ChineseFont_SteeringWheelForce[CHINESE_FONT_SIZE * 6];
 extern const char ChineseFont_CurrentValue[CHINESE_FONT_SIZE * 3];
 extern const char ChineseFont_ValueMax[CHINESE_FONT_SIZE * 3];
@@ -64,8 +67,10 @@ void BLE_SendBytes(BLE_CmdDataTypeEnum type, char* value)
 	memcpy(BLE_SendStruct.data, value, sizeof(BLE_SendStruct.data));
 	BLE_SendStruct.type = type;
 	BLE_SendStruct.verify = CheckSum(&BLE_SendStruct.type, 7);
-	HAL_UART_Transmit_DMA(&BLE_UART, (uint8_t*)&BLE_SendStruct, 
-					sizeof(BLE_SendStructTypedef));
+//	HAL_UART_Transmit_DMA(&BLE_UART, (uint8_t*)&BLE_SendStruct,
+//					sizeof(BLE_SendStructTypedef));
+	HAL_UART_Transmit(&BLE_UART, (uint8_t*)&BLE_SendStruct,
+					sizeof(BLE_SendStructTypedef), 1000);
 }
 
 /*******************************************************************************
@@ -117,11 +122,7 @@ void BLE_Process(void)
 			OLED_ShowChineseString(0, 0, (char*)ChineseFont_SteeringWheelForce,
 					sizeof(ChineseFont_SteeringWheelForce) / CHINESE_FONT_SIZE);
 			OLED_ShowString(0, 2, "value = ", 8);
-			OLED_ShowString(0, 4, "max   = ", 8);
-			OLED_ShowString(0, 6, "min   = ", 8);
 			OLED_ShowString(104, 2, "N", 1);
-			OLED_ShowString(104, 4, "N", 1);
-			OLED_ShowString(104, 6, "N", 1);
 			break;
 
 		/* 开启方向盘转角检测 */
@@ -133,11 +134,7 @@ void BLE_Process(void)
 			OLED_ShowChineseString(0, 0, (char*)ChineseFont_SteeringWheelAngle,
 					sizeof(ChineseFont_SteeringWheelAngle) / CHINESE_FONT_SIZE);
 			OLED_ShowString(0, 2, "value = ", 8);
-			OLED_ShowString(0, 4, "max   = ", 8);
-			OLED_ShowString(0, 6, "min   = ", 8);
 			OLED_ShowString(104, 2, "°", 1);
-			OLED_ShowString(104, 4, "°", 1);
-			OLED_ShowString(104, 6, "°", 1);
 			break;
 
 		/* 开启制动距离检测 */
@@ -150,42 +147,43 @@ void BLE_Process(void)
 			OLED_ShowChineseString(0, 0, (char*)ChineseFont_BrakingDistance,
 					sizeof(ChineseFont_BrakingDistance) / CHINESE_FONT_SIZE);
 			OLED_ShowString(0, 2, "value = ", 8);
-			OLED_ShowString(0, 4, "max   = ", 8);
-			OLED_ShowString(0, 6, "min   = ", 8);
-			OLED_ShowString(104, 2, "°", 1);
-			OLED_ShowString(104, 4, "°", 1);
-			OLED_ShowString(104, 6, "°", 1);
 			break;
 
 		/* 开启制动踏板力检测 */
 		case BLE_CMD_TYPE_DETECTED_PEDAL_FORCE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_PEDAL_FORCE;
+			OLED_Clear();
 			break;
 
 		/* 开启手刹制动力检测 */
 		case BLE_CMD_TYPE_DETECTED_HAND_BRAKE_FORCE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_HAND_BRAKE_FORCE;
+			OLED_Clear();
 			break;
 
 		/* 开启喇叭检测 */
 		case BLE_CMD_TYPE_DETECTED_NOISE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_NOISE;
+			OLED_Clear();
 			break;
 
 		/* 开启侧滑量检测 */
 		case BLE_CMD_TYPE_DETECTED_SIDESLIP_DISTANCE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE;
+			OLED_Clear();
 			break;
 
 		/* 开启货叉下降速度检测 */
 		case BLE_CMD_TYPE_DETECTED_DOWN_VELOCITY:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_DOWN_VELOCITY;
+			OLED_Clear();
 			break;
 
 		/* 开启电池电量检测 */
 		case BLE_CMD_TYPE_DETECTED_BATTERY_CAPACITY:
 			ANALOG_ConvertEnable();
 			PROCESS_Mode = PROCESS_MODE_DETECTED_BATTERY_CAPACITY;
+			OLED_Clear();
 			break;
 
 		default:

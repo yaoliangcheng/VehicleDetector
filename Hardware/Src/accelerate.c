@@ -9,6 +9,7 @@ ACCELERATE_SendStrcutTypedef ACCELERATE_SendStrcut;
 
 extern ItemValueTypedef     ItemValue;
 extern ItemZeroValueTypedef ItemZeroValue;
+extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
 /******************************************************************************/
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
@@ -152,19 +153,43 @@ static float GetAngleValue(int16_t data)
  *
  * 		 测试发现：静止状态下，加速度值有±0.5的零点偏移，所以绝对值<0.5默认为静止，不积分
  */
+//double Ax = 0.0;
+//double Ay = 0.0;
+//double Az = 0.0;
+//double Axy = 0.0;
+double Speed = 0.0;
+
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 {
-	double Ax = 0.0;
+//	double Ax = 0.0;
 	char value[7];
 
 	/* x轴加速度在data1位置 */
-	Ax = GetAccelerateSpeed(buffer->data1);
+	ItemValue.Ax = GetAccelerateSpeed(buffer->data1);
+//	Ay = GetAccelerateSpeed(buffer->data2);
+//	Az = GetAccelerateSpeed(buffer->data3);
+//	Axy = sqrt(Ax * Ax + Ay * Ay + Az * Az);
+//	Axy = sqrt(Ax * Ax + Ay * Ay);
 
-	if (fabs(Ax) > 0.5)
+	if (ItemValueSetZeroEnable.brakeAx == ENABLE)
 	{
-		ItemValue.brakeVelocity += Ax * ACCELERATE_INTEGRAL_TIME;
+		ItemValueSetZeroEnable.brakeAx = DISABLE;
+		ItemZeroValue.Ax = ItemValue.Ax;
+		ItemValue.brakeVelocity = 0;
+		ItemValue.brakeVelocityInit = 0;
+		ItemValue.brakeDistance = 0;
+	}
 
-		if (Ax < 0)
+	/* 加速度零点校准 */
+	ItemValue.Ax -= ItemZeroValue.Ax;
+
+	if (fabs(ItemValue.Ax) > 0.05)
+	{
+		ItemValue.brakeVelocity += ItemValue.Ax * ACCELERATE_INTEGRAL_TIME;
+
+		Speed = ItemValue.brakeVelocity * 3.6;
+
+		if (ItemValue.Ax < 0)
 		{
 			ItemValue.brakeVelocityInit = ItemValue.brakeVelocity;
 			ItemValue.brakeDistance += ItemValue.brakeVelocity
@@ -176,14 +201,30 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 			ItemValue.brakeDistance     = 0;
 		}
 	}
+	else
+	{
+		ItemValue.brakeVelocity = 0;
+		ItemValue.brakeVelocityInit  = 0;
+		ItemValue.brakeDistance = 0;
+		Speed = 0;
+	}
 
 	/* 显示实时速度 */
-	sprintf(value, "%6.1f", ItemValue.brakeVelocity);
+	sprintf(value, "%6.1f", Speed);
 #if DEVICE_OLED_DISPLAY_ENABLE
-
+	OLED_ShowString(64, 2, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
 	BLE_SendBytes(BLE_DATA_TYPE_BRAKING_INITIAL_VELOCITY, value);
+#endif
+
+	/* 显示实时速度 */
+	sprintf(value, "%6.1f", ItemValue.brakeDistance);
+#if DEVICE_OLED_DISPLAY_ENABLE
+	OLED_ShowString(64, 4, value, 6);
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+	BLE_SendBytes(BLE_DATA_TYPE_BRAKING_DISTANCE, value);
 #endif
 }
 
@@ -198,11 +239,18 @@ static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 
 	/* 当前的角度值 - 零位值 */
 	ItemValue.steeringWheelAngle = GetAngleValue(buffer->data3);
+
+	if (ItemValueSetZeroEnable.steeringWheelAngle == ENABLE)
+	{
+		ItemValueSetZeroEnable.steeringWheelAngle = DISABLE;
+		ItemZeroValue.steeringWheelAngle = ItemValue.steeringWheelAngle;
+	}
+
 	ItemValue.steeringWheelAngle -= ItemZeroValue.steeringWheelAngle;
 
 	sprintf(value, "%6.1f", ItemValue.steeringWheelAngle);
 #if DEVICE_OLED_DISPLAY_ENABLE
-	OLED_ShowString(56, 2, value, 5);
+	OLED_ShowString(64, 2, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
 	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_ANGLE, value);

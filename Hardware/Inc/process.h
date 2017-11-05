@@ -29,6 +29,7 @@ typedef struct
 {
 	double steeringWheelForce;						/* 方向盘转向力 */
 	double steeringWheelAngle;						/* 方向盘转角 */
+	double Ax;										/* 加速度 */
 	double brakeVelocity;							/* 制动速度 */
 	double brakeVelocityInit;						/* 制动初速度 */
 	double brakeDistance;							/* 制动距离 */
@@ -41,6 +42,19 @@ typedef struct
 
 typedef struct
 {
+	FunctionalState steeringWheelForce;						/* 方向盘转向力 */
+	FunctionalState steeringWheelAngle;						/* 方向盘转角 */
+	FunctionalState brakeAx;								/* 加速度 */
+	FunctionalState pedalForce;								/* 踏板力 */
+	FunctionalState handBrakeForce;							/* 手刹力 */
+	FunctionalState noise;									/* 噪声值 */
+	FunctionalState downVelocity;							/* 下降速度 */
+	FunctionalState batteryCapacity;						/* 电池电量 */
+} ItemValueSetZeroEnableTypedef;
+
+typedef struct
+{
+	double Ax;										/* 加速度零点值 */
 	double steeringWheelForce;						/* 方向盘转向力零点值 */
 	double steeringWheelAngle;						/* 方向盘转角零点值 */
 	double pedalForce;								/* 踏板力零点值 */

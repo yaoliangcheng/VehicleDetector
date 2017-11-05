@@ -1,5 +1,6 @@
 #include "noise.h"
 #include "ble.h"
+#include "oled.h"
 
 /******************************************************************************/
 /* ‘Î…˘«Î«Û÷∏¡Ó */
@@ -8,6 +9,10 @@ uint8_t NOISE_RequireCmd[8] = \
 		{0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A};
 uint8_t NOISE_RecvBytes[NOISE_UART_RX_BYTE_MAX];
 NOISE_RecvTypedef NOISE_Recv;
+		
+extern ItemValueTypedef     ItemValue;
+extern ItemZeroValueTypedef ItemZeroValue;
+extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
 /*******************************************************************************
  *
@@ -35,7 +40,6 @@ void NOISE_Require(void)
 void NOISE_Process(void)
 {
 	uint16_t noiseValue = 0;
-	float    noise = 0.0;
 	char value[7];
 
 	if (ENABLE == NOISE_Recv.status)
@@ -47,12 +51,21 @@ void NOISE_Process(void)
 			&& (NOISE_Recv.buffer.dataLength == NOISE_MODULE_DATA_LENGTH))
 		{
 			noiseValue = (NOISE_Recv.buffer.dataH << 8) | NOISE_Recv.buffer.dataL;
-			noise = (((uint32_t)noiseValue * NOISE_MODULE_RANGE_DB)
-						/ (float)65535) + NOISE_MODULE_RANGE_DB_MIN;
+//			noise = (((uint32_t)noiseValue * NOISE_MODULE_RANGE_DB)
+//						/ (float)65535) + NOISE_MODULE_RANGE_DB_MIN;
+			ItemValue.noise = ((float)noiseValue * 0.1);
 
-			sprintf(value, "%6.1f", noise);
+			if (ItemValueSetZeroEnable.noise == ENABLE)
+			{
+				ItemValueSetZeroEnable.noise = DISABLE;
+				ItemZeroValue.noise = ItemValue.noise;
+			}
+
+			ItemValue.noise -= ItemZeroValue.noise;
+
+			sprintf(value, "%6.1f", ItemValue.noise);
 #if DEVICE_OLED_DISPLAY_ENABLE
-
+			OLED_ShowString(64, 2, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
 			BLE_SendBytes(BLE_DATA_TYPE_NOISE, value);
