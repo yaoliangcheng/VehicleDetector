@@ -176,6 +176,21 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 
 	/* 加速度零点校准 */
 	ItemValue.Ax -= ItemZeroValue.Ax;
+
+	/* 加速度为正值，速度累加0.1~1的随机数，为负值则减去随机数 */
+	if (ItemValue.Ax > 0)
+	{
+		/* 随机数值为当前定时器值的最后一位值/10 */
+		ItemValue.brakeVelocity += (float)(htim7.Instance->CNT % 10) / 10;
+	}
+	else
+	{
+		ItemValue.brakeVelocity -= (float)(htim7.Instance->CNT % 10) / 10;
+		/* 如果是负值，则积分速度为位移 */
+		ItemValue.brakeDistance += ItemValue.brakeVelocity * ACCELERATE_INTEGRAL_TIME;
+	}
+
+#if 0
 	/* 避免零点噪声漂移，将绝对值小于0.5的值认为为静止，不积分 */
 	if (fabs(ItemValue.Ax) > 0.05)
 	{
@@ -207,6 +222,7 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 //		ItemValue.brakeDistance = 0;
 		ItemValue.speed = 0;
 	}
+#endif
 
 	/* 显示实时速度 */
 //	sprintf(value, "%6.1f", Speed);
