@@ -37,6 +37,7 @@ typedef struct
 	double pedalForce;								/* 踏板力 */
 	double handBrakeForce;							/* 手刹力 */
 	float  noise;									/* 噪声值 */
+	double downAx;									/* 下降加速度 */
 	double downVelocity;							/* 下降速度 */
 	uint8_t batteryCapacity;						/* 电池电量 */
 } ItemValueTypedef;
@@ -61,6 +62,7 @@ typedef struct
 	double pedalForce;								/* 踏板力零点值 */
 	double handBrakeForce;							/* 手刹力零点值 */
 	float  noise;									/* 噪声零点值 */
+	double downAx;									/* 下降加速度 */
 } ItemZeroValueTypedef;
 
 /******************************************************************************/

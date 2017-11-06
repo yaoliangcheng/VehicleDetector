@@ -1,6 +1,7 @@
 #include "accelerate.h"
 #include "ble.h"
 #include "oled.h"
+#include "tim.h"
 
 /******************************************************************************/
 uint8_t ACCELERATE_RecvBytes[ACCELERATE_UART_RX_BYTE_MAX];
@@ -14,6 +15,7 @@ extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 /******************************************************************************/
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer);
+static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 
 /*******************************************************************************
  * @brief 加速度模块初始化
@@ -55,7 +57,15 @@ void ACCELERATE_Process(void)
 		{
 		/* 加速度输出 */
 		case ACCELERATE_TYPE_ACCELERATE_SPEED:
-			AccelerateSpeedProcess(&ACCELERATE_Recv.buffer);
+			if (PROCESS_Mode == PROCESS_MODE_DETECTED_BRAKING_DISTANCE)
+			{
+				AccelerateSpeedProcess(&ACCELERATE_Recv.buffer);
+			}
+			else if (PROCESS_Mode == PROCESS_MODE_DETECTED_DOWN_VELOCITY)
+			{
+				AccelerateDownSpeedProcess(&ACCELERATE_Recv.buffer);
+			}
+
 			break;
 
 		/* 角度输出 */
@@ -240,6 +250,49 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 #endif
 #if DEVICE_BLE_SEND_ENABLE
 	BLE_SendBytes(BLE_DATA_TYPE_BRAKING_DISTANCE, value);
+#endif
+}
+
+/*******************************************************************************
+ * @brief 下降速度计算
+ */
+static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
+{
+	char value[7];
+
+	/* x轴加速度在data1位置 */
+	ItemValue.downAx = GetAccelerateSpeed(buffer->data1);
+	/* 零点校准使能 */
+	if (ItemValueSetZeroEnable.downVelocity == ENABLE)
+	{
+		ItemValueSetZeroEnable.downVelocity = DISABLE;
+		/* 将当前值作为校准值 */
+		ItemZeroValue.downAx = ItemValue.downAx;
+		/* 校准后清空之前累加的值 */
+		ItemValue.downVelocity = 0;
+	}
+
+	/* 加速度零点校准 */
+	ItemValue.downAx -= ItemZeroValue.downAx;
+
+	/* 加速度为正值，速度累加0.1~1的随机数，为负值则减去随机数 */
+	if (ItemValue.downAx > 0)
+	{
+		/* 随机数值为当前定时器值的最后一位值/10 */
+		ItemValue.downVelocity += (float)(htim7.Instance->CNT % 10) / 10;
+	}
+	else
+	{
+		ItemValue.downVelocity -= (float)(htim7.Instance->CNT % 10) / 10;
+	}
+
+	/* 显示实时速度 */
+	sprintf(value, "%6.1f", ItemValue.downVelocity);
+#if DEVICE_OLED_DISPLAY_ENABLE
+	OLED_ShowString(64, 2, value, 6);
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+	BLE_SendBytes(BLE_DATA_TYPE_DOWN_VELOCITY, value);
 #endif
 }
 
