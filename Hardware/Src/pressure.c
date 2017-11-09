@@ -90,15 +90,9 @@ void PRESSURE_GetSteeringWheelForce(void)
 
 	/* 获取24bitAD值 */
 	data = HX711_ReadValue();
-	/* 判断AD值合法 */
-	if (data > PRESSURE_Param.steeringWheelForceMin)
-	{
-		data -= PRESSURE_Param.steeringWheelForceMin;
-	}
-	else
-	{
-		data = 0;
-	}
+	/* 获取的AD值减去中间值 */
+	data -= PRESSURE_RANGE_MEDIAN_VALUE;
+
 	/* 转换转向力值 */
 	ItemValue.steeringWheelForce =
 			(data / (double)PRESSURE_Param.steeringWheelForceRange)
@@ -134,15 +128,8 @@ void PRESSURE_GetHandBrakeForce(void)
 
 	/* 获取24bitAD值 */
 	data = HX711_ReadValue();
-	/* 判断AD值合法 */
-	if (data > PRESSURE_Param.handBrakeForceMin)
-	{
-		data -= PRESSURE_Param.handBrakeForceMin;
-	}
-	else
-	{
-		data = 0;
-	}
+	/* 获取的AD值减去中间值 */
+	data -= PRESSURE_RANGE_MEDIAN_VALUE;
 	/* 转换踏板力值 */
 	ItemValue.handBrakeForce =
 			(data / (double)PRESSURE_Param.handBrakeForceRange)

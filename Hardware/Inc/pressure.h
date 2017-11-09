@@ -20,7 +20,8 @@
 
 #define PRESSURE_RANGE_PEDAL_FORCE			(double)(100 * 9.8) /* 1kg = 9.8N */
 #define PRESSURE_RANGE_STEERING_WHEEL_FORCE (double)(30 * 9.8)
-#define PRESSURE_RANGE_HAND_BRAKE_FORCE		(double)(100 * 9.8)
+#define PRESSURE_RANGE_HAND_BRAKE_FORCE		(double)(30 * 9.8)
+#define PRESSURE_RANGE_MEDIAN_VALUE			(0x7FFFFF)
 
 /******************************************************************************/
 typedef struct
