@@ -12,6 +12,7 @@ extern ItemValueTypedef     ItemValue;
 extern ItemZeroValueTypedef ItemZeroValue;
 extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
+extern uint16_t huaTimeBase;
 /******************************************************************************/
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer);
@@ -67,7 +68,8 @@ void ACCELERATE_Process(void)
 			}
 
 			break;
-
+			
+			
 		/* 角度输出 */
 		case ACCELERATE_TYPE_ANGLE:
 			AccelerateAngleProcess(&ACCELERATE_Recv.buffer);
@@ -175,7 +177,7 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	/* 零点校准使能 */
 	if (ItemValueSetZeroEnable.brakeAx == ENABLE)
 	{
-		ItemValueSetZeroEnable.brakeAx = DISABLE;
+		  ItemValueSetZeroEnable.brakeAx = DISABLE;
 		/* 将当前值作为校准值 */
 		ItemZeroValue.Ax = ItemValue.Ax;
 		/* 校准后清空之前累加的值 */
@@ -188,24 +190,22 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	ItemValue.Ax -= ItemZeroValue.Ax;
 
 	/* 加速度为正值，速度累加0.1~1的随机数，为负值则减去随机数 */
-	if (ItemValue.Ax > 0)
-	{
-		/* 随机数值为当前定时器值的最后一位值/10 */
-		ItemValue.brakeVelocity += (float)(htim7.Instance->CNT % 10) / 10;
-	}
-	else
-	{
-		ItemValue.brakeVelocity -= (float)(htim7.Instance->CNT % 10) / 10;
-		/* 如果是负值，则积分速度为位移 */
-		ItemValue.brakeDistance += ItemValue.brakeVelocity * ACCELERATE_INTEGRAL_TIME;
-	}
-
-#if 0
+//	if (ItemValue.Ax > 0)
+//	{
+//		/* 随机数值为当前定时器值的最后一位值/10 */
+//		ItemValue.brakeVelocity += (float)(htim7.Instance->CNT % 10) / 10;
+//	}
+//	else
+//	{
+//		ItemValue.brakeVelocity -= (float)(htim7.Instance->CNT % 10) / 10;
+//	}    
+	
+#if 1
 	/* 避免零点噪声漂移，将绝对值小于0.5的值认为为静止，不积分 */
 	if (fabs(ItemValue.Ax) > 0.05)
 	{
 		/* 加速度积分获取速度 */
-		ItemValue.brakeVelocity += ItemValue.Ax * ACCELERATE_INTEGRAL_TIME;
+		ItemValue.brakeVelocity += ItemValue.Ax*0.01;// * ACCELERATE_INTEGRAL_TIME;
 		/* 前进方向，速度不可能为负值 */
 		if (ItemValue.brakeVelocity < 0)
 		{
@@ -214,23 +214,23 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 		/* 速度单位转换成km/h */
 		ItemValue.speed = ItemValue.brakeVelocity * 3.6;
 		/* 加速度为负值，则机动车刹车，开始对速度积分，算位移 */
+		
 		if (ItemValue.Ax < 0)
 		{
-			ItemValue.brakeDistance += ItemValue.brakeVelocity
-					* ACCELERATE_INTEGRAL_TIME;
+			ItemValue.brakeDistance+=ItemValue.Ax*ItemValue.Ax/20000+ItemValue.brakeVelocity*0.01;
 		}
 		else	/* 否则则证明在加速过程，不累计位移 */
 		{
 			ItemValue.brakeVelocityInit = 0;
-			ItemValue.brakeDistance     = 0;
+			//ItemValue.brakeDistance     = 0;   hua
 		}
 	}
 	else	/* 默认为静止模式，速度为0 */
 	{
-		ItemValue.brakeVelocity = 0;
+//		ItemValue.brakeVelocity = 0;					hua
 //		ItemValue.brakeVelocityInit  = 0;
 //		ItemValue.brakeDistance = 0;
-		ItemValue.speed = 0;
+//		ItemValue.speed = 0;									hua
 	}
 #endif
 
@@ -259,7 +259,6 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 {
 	char value[7];
-
 	/* x轴加速度在data1位置 */
 	ItemValue.downAx = GetAccelerateSpeed(buffer->data1);
 	/* 零点校准使能 */
@@ -275,17 +274,10 @@ static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	/* 加速度零点校准 */
 	ItemValue.downAx -= ItemZeroValue.downAx;
 
-	/* 加速度为正值，速度累加0.1~1的随机数，为负值则减去随机数 */
-	if (ItemValue.downAx > 0)
-	{
-		/* 随机数值为当前定时器值的最后一位值/10 */
-		ItemValue.downVelocity += (float)(htim7.Instance->CNT % 10) / 10;
-	}
-	else
-	{
-		ItemValue.downVelocity -= (float)(htim7.Instance->CNT % 10) / 10;
-	}
-
+  if(fabs(ItemValue.downAx)>0.05) {ItemValue.downVelocity+=ItemValue.downAx*0.01;huaTimeBase=0;}
+		else huaTimeBase++;
+	if(huaTimeBase>=30) {huaTimeBase=0;ItemValue.downVelocity=0;}
+	if(ItemValue.downVelocity<0) ItemValue.downVelocity=0;
 	/* 显示实时速度 */
 	sprintf(value, "%6.1f", ItemValue.downVelocity);
 #if DEVICE_OLED_DISPLAY_ENABLE

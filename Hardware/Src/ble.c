@@ -185,6 +185,8 @@ void BLE_Process(void)
 
 		/* 开启货叉下降速度检测 */
 		case BLE_CMD_TYPE_DETECTED_DOWN_VELOCITY:
+			/* 设置加速度信息回传 */
+			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ACCELERATE_SPEED_MARK, 0x00);
 			PROCESS_Mode = PROCESS_MODE_DETECTED_DOWN_VELOCITY;
 			OLED_Clear();
 			break;

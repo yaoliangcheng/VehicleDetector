@@ -52,6 +52,9 @@
 #include "pressure.h"
 #include "process.h"
 
+
+
+uint16_t huaTimeBase;
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -104,7 +107,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
   MX_USART2_UART_Init();
-  MX_TIM7_Init();
+  //MX_TIM7_Init();
   MX_ADC_Init();
 
   /* USER CODE BEGIN 2 */
@@ -113,7 +116,7 @@ int main(void)
   PRESSURE_Init();
   NOISE_Init();
 
-  	OLED_Init();
+  OLED_Init();
 	OLED_ShowChineseString(0, 2, (char*)ChineseFont_Welcome,
 			sizeof(ChineseFont_Welcome) / 32);
 
