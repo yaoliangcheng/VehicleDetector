@@ -56,6 +56,11 @@ void PROCESS(void)
 		ACCELERATE_Process();
 		break;
 
+	/* ÆÂ¶È¼ì²â */
+	case PROCESS_MODE_DETECTED_GRADIENT:
+		ACCELERATE_Process();
+		break;
+
 	/* ï®µç³ØµçÁ¿¼ì²â */
 	case PROCESS_MODE_DETECTED_BATTERY_CAPACITY:
 		ANALOG_Process();

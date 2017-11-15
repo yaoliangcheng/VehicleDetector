@@ -72,6 +72,7 @@ void ACCELERATE_Process(void)
 			
 		/* ½Ç¶ÈÊä³ö */
 		case ACCELERATE_TYPE_ANGLE:
+			if (PROCESS_Mode == PROCESS_MODE_DETECTED_GRADIENT)
 			AccelerateAngleProcess(&ACCELERATE_Recv.buffer);
 			break;
 
@@ -317,4 +318,9 @@ static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_ANGLE, value);
 #endif
 }
+
+/*******************************************************************************
+ *
+ */
+
 

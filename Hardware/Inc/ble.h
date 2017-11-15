@@ -32,6 +32,7 @@ typedef enum
 	BLE_CMD_TYPE_DETECTED_NOISE,						/* 开启喇叭检测 */
 	BLE_CMD_TYPE_DETECTED_SIDESLIP_DISTANCE,			/* 开启侧滑量检测 */
 	BLE_CMD_TYPE_DETECTED_DOWN_VELOCITY,				/* 开启货叉下降速度检测 */
+	BLE_CMD_TYPE_DETECTED_GRADIENT,						/* 坡度检测 */
 	BLE_CMD_TYPE_DETECTED_BATTERY_CAPACITY,				/* 开启电池电量检测 */
 	
 	/* 方向盘转向力 */
@@ -82,6 +83,7 @@ typedef enum
 	BLE_CMD_SUBTYPE_SET_ZORO_NOISE,						  /* 噪声置零 */
 	BLE_CMD_SUBTYPE_SET_ZORO_SIDESLIP_FORCE,			  /* 侧滑力置零 */
 	BLE_CMD_SUBTYPE_SET_ZORO_DOWN_VELOCITY,				  /* 下降速度置零 */
+	BLE_CMD_SUBTYPE_SET_ZERO_GRADIENT,					  /* 坡度置零 */
 } BLE_CmdSubtypeEnum;
 
 /******************************************************************************/

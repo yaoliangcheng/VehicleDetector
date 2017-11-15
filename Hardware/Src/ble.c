@@ -191,6 +191,14 @@ void BLE_Process(void)
 			OLED_Clear();
 			break;
 
+		/* 坡度检测 */
+		case BLE_CMD_TYPE_DETECTED_GRADIENT:
+			/* 设置角度信息回传 */
+			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ANGLE_MARK, 0x00);
+			PROCESS_Mode = PROCESS_MODE_DETECTED_GRADIENT;
+			OLED_Clear();
+			break;
+
 		/* 开启电池电量检测 */
 		case BLE_CMD_TYPE_DETECTED_BATTERY_CAPACITY:
 			ANALOG_ConvertEnable();
