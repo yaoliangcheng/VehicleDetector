@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+<ProjectName>E:\&#39038;&#32769;&#24072;&#39033;&#30446;\&#21378;&#20869;&#26426;&#21160;&#36710;&#26234;&#33021;&#26816;&#27979;&#31995;&#32479;\01_Program\VehicleDetector\\VehicleDetector</ProjectName>
+<CMSIS>..\Drivers\CMSIS</CMSIS>
+<HAL_Driver>D:\STM32CubeLib\STM32Cube_FW_L1_V1.8.0\Drivers\CMSIS</HAL_Driver>
+
+<Toolchain>MDK-ARM</Toolchain>
+	<Toolversion>5</Toolversion>
+<Version>0</Version>
+
+<filestoremove>
+	<file>
+	   		<name>..\Drivers\CMSIS\Device\ST\STM32L1xx\Source\Templates\arm\startup_stm32l151xb.s</name>
+	   		<name>..\Src\main.c</name>
+	   		<name>..\Src\gpio.c</name>
+	   		<name>..\Src\adc.c</name>
+	   		<name>..\Src\dma.c</name>
+	   		<name>..\Src\tim.c</name>
+	   		<name>..\Src\usart.c</name>
+	   		<name>..\Src\stm32l1xx_it.c</name>
+	   		<name>..\Src\stm32l1xx_hal_msp.c</name>
+	</file>
+</filestoremove>
+
+<inctoremove>
+	<Aincludes>
+	   <include></include>
+    </Aincludes>
+	<Cincludes>
+    </Cincludes>
+</inctoremove>
+
+<configs>
+  <config>
+    <name>VehicleDetector</name>				
+    <device>STM32L151C8Tx</device>		 
+    <heapSize>0x200</heapSize>
+    <stackSize>0x400</stackSize>
+    
+    	<cpuclock>32</cpuclock>
+    	<board>custom</board>
+			
+    <usedDebug>true</usedDebug>
+    	<debugprobe>swd</debugprobe>
+    <optimization></optimization>
+    <icfloc>0</icfloc>
+    <Adefines>
+        <define></define>
+    </Adefines>   
+
+    <UsedFreeRTOS></UsedFreeRTOS>
+    <Aincludes>
+
+
+	    	<include></include>
+    </Aincludes>
+    <Cdefines>
+    </Cdefines>
+    <definestoremove>
+        <Adefines>
+            <define></define>
+        </Adefines>
+        <Cdefines>
+            <define>USE_FULL_LL_DRIVER</define>
+            <define>MBEDTLS_CONFIG_FILE=&lt;mbedtls_config.h&gt;</define>
+            <define>_TIMEVAL_DEFINED</define>
+            <define>_SYS_TIME_H_</define>
+        </Cdefines>         
+    </definestoremove>
+    
+	<Cincludes>
+	   <include>..\Inc</include>
+	   <include>..\Drivers\STM32L1xx_HAL_Driver\Inc</include>
+	   <include>..\Drivers\STM32L1xx_HAL_Driver\Inc\Legacy</include>
+	   <include>..\Drivers\CMSIS\Device\ST\STM32L1xx\Include</include>
+	   <include>..\Drivers\CMSIS\Include</include>
+
+    </Cincludes>
+      </config>
+    </configs> 
+
+    <underRoot>false</underRoot>
+
+	   <group>
+	    <name>Drivers</name> 
+		   <group>
+		 		<name>STM32L1xx_HAL_Driver</name>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_adc.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_adc_ex.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_tim.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_tim_ex.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_uart.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_rcc.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_rcc_ex.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_flash.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_flash_ex.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_flash_ramfunc.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_gpio.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_dma.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_pwr.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_pwr_ex.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_cortex.c</name>
+						</file>
+		    </group>
+		    <group>
+		    	<name>CMSIS</name>
+							<file>
+								<name>../Src/system_stm32l1xx.c</name>
+							</file>
+		    	</group>
+	  </group>   
+	  <group>
+	  <name>Application</name>
+	    <group>
+	      <name>User</name>  
+                                <file>
+                                 <name>..\Src\main.c</name>
+                                </file>
+
+                                <file>
+                                 <name>..\Src\gpio.c</name>
+                                </file>
+
+                                <file>
+                                 <name>..\Src\adc.c</name>
+                                </file>
+
+                                <file>
+                                 <name>..\Src\dma.c</name>
+                                </file>
+
+                                <file>
+                                 <name>..\Src\tim.c</name>
+                                </file>
+
+                                <file>
+                                 <name>..\Src\usart.c</name>
+                                </file>
+
+                                <file>
+                                 <name>..\Src\stm32l1xx_it.c</name>
+                                </file>
+
+                                <file>
+                                 <name>..\Src\stm32l1xx_hal_msp.c</name>
+                                </file>
+
+
+
+
+</group> 
+  </group>
+</Project>
