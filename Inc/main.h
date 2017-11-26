@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * File Name          : main.h
+  * File Name          : main.hpp
   * Description        : This file contains the common defines of the application
   ******************************************************************************
   ** This notice applies to any and all portions of this file
@@ -40,24 +40,25 @@
 #define __MAIN_H
   /* Includes ------------------------------------------------------------------*/
 
+/* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
 
-#define LED_Pin GPIO_PIN_14
-#define LED_GPIO_Port GPIOC
-#define VBAT_IN_Pin GPIO_PIN_4
-#define VBAT_IN_GPIO_Port GPIOA
+#define LED_Pin GPIO_PIN_1
+#define LED_GPIO_Port GPIOH
+#define PRESSURE_DT_Pin GPIO_PIN_14
+#define PRESSURE_DT_GPIO_Port GPIOB
 #define PRESSURE_SCK_Pin GPIO_PIN_15
 #define PRESSURE_SCK_GPIO_Port GPIOB
-#define PRESSURE_DT_Pin GPIO_PIN_8
-#define PRESSURE_DT_GPIO_Port GPIOA
-#define BLE_RST_Pin GPIO_PIN_11
+#define BLE_RST_Pin GPIO_PIN_8
 #define BLE_RST_GPIO_Port GPIOA
-#define BLE_WKUP_Pin GPIO_PIN_12
+#define BLE_WKUP_Pin GPIO_PIN_11
 #define BLE_WKUP_GPIO_Port GPIOA
+#define BLE_INT_Pin GPIO_PIN_12
+#define BLE_INT_GPIO_Port GPIOA
 #define BLE_EN_Pin GPIO_PIN_15
 #define BLE_EN_GPIO_Port GPIOA
 #define OLED_CS_Pin GPIO_PIN_3
@@ -71,13 +72,26 @@
 #define OLED_CLK_Pin GPIO_PIN_7
 #define OLED_CLK_GPIO_Port GPIOB
 
+/* ########################## Assert Selection ############################## */
+/**
+  * @brief Uncomment the line below to expanse the "assert_param" macro in the 
+  *        HAL drivers code
+  */
+/* #define USE_FULL_ASSERT    1U */
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
 void _Error_Handler(char *, int);
 
 #define Error_Handler() _Error_Handler(__FILE__, __LINE__)
+#ifdef __cplusplus
+}
+#endif
 
 /**
   * @}
