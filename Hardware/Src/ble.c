@@ -17,6 +17,9 @@ extern const char ChineseFont_ValueMax[CHINESE_FONT_SIZE * 3];
 extern const char ChineseFont_ValueMin[CHINESE_FONT_SIZE * 3];
 extern const char ChineseFont_SteeringWheelAngle[CHINESE_FONT_SIZE * 5];
 extern const char ChineseFont_BrakingDistance[CHINESE_FONT_SIZE * 4];
+extern const char ChineseFont_DownVelocityTitle[CHINESE_FONT_SIZE * 8];
+extern const char ChineseFont_DownVelocityDistance[CHINESE_FONT_SIZE * 4];
+extern const char ChineseFont_DownVelocitySpeed[CHINESE_FONT_SIZE * 4];
 
 /*******************************************************************************
  * @brief 蓝牙初始化
@@ -193,10 +196,14 @@ void BLE_Process(void)
 
 		/* 开启货叉下降速度检测 */
 		case BLE_CMD_TYPE_DETECTED_DOWN_VELOCITY:
-			/* 设置加速度信息回传 */
-			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ACCELERATE_SPEED_MARK, 0x00);
 			PROCESS_Mode = PROCESS_MODE_DETECTED_DOWN_VELOCITY;
 			OLED_Clear();
+			OLED_ShowChineseString(0, 0, (char*)ChineseFont_DownVelocityTitle,
+						sizeof(ChineseFont_DownVelocityTitle) / CHINESE_FONT_SIZE);
+			OLED_ShowChineseString(0, 2, (char*)ChineseFont_DownVelocityDistance,
+						sizeof(ChineseFont_DownVelocityDistance) / CHINESE_FONT_SIZE);
+			OLED_ShowChineseString(0, 4, (char*)ChineseFont_DownVelocitySpeed,
+						sizeof(ChineseFont_DownVelocitySpeed) / CHINESE_FONT_SIZE);
 			break;
 
 		/* 坡度检测 */

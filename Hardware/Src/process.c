@@ -6,6 +6,10 @@ ItemValueTypedef     ItemValue;
 ItemZeroValueTypedef ItemZeroValue;
 ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
+/* 货叉下降速度检测 */
+uint16_t DownVelocity_Distance;
+uint16_t DownVelocity_DistanceOld;
+double   DownVelocity_Speed;
 /*******************************************************************************
  *
  */

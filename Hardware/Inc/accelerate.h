@@ -10,7 +10,7 @@
 #include "usart.h"
 
 /******************************************************************************/
-#define ACCELERATE_UART 						(huart1)
+#define ACCELERATE_UART 						(huart3)
 #define ACCELERATE_UART_RX_BYTE_MAX				(30)		/* 加速度传感器串口最大接收字节长度 */
 #define ACCELERATE_UART_DMA_RX_GL_FLAG			(DMA_FLAG_GL5)
 #define ACCELERATE_PROTOCOL_HEAD				(0x55)

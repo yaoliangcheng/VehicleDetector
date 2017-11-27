@@ -43,7 +43,8 @@ typedef struct
 	double sideSlipVelocity;						/* 侧滑量速度 */
 	double sideSlipDistance;						/* 侧滑量距离 */
 	double sideSlipOffset;							/* 侧滑量 */
-	double downAx;									/* 下降加速度 */
+//	double downAx;									/* 下降加速度 */
+	uint16_t downVelocityDistance;					/* 离地距离 */
 	double downVelocity;							/* 下降速度 */
 	double gradientAverage;							/* 坡度平均值 */
 	double gradient;								/* 坡度值 */

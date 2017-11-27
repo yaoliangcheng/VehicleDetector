@@ -5,7 +5,6 @@
 #include "stm32l1xx_hal.h"
 #include "main.h"
 
-
 //OLED模式设置
 //0:4线串行模式
 //1:并行8080模式

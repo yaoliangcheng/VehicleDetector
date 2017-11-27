@@ -11,14 +11,6 @@
 <filestoremove>
 	<file>
 	   		<name>..\Drivers\CMSIS\Device\ST\STM32L1xx\Source\Templates\arm\startup_stm32l151xb.s</name>
-	   		<name>..\Src\main.c</name>
-	   		<name>..\Src\gpio.c</name>
-	   		<name>..\Src\adc.c</name>
-	   		<name>..\Src\dma.c</name>
-	   		<name>..\Src\tim.c</name>
-	   		<name>..\Src\usart.c</name>
-	   		<name>..\Src\stm32l1xx_it.c</name>
-	   		<name>..\Src\stm32l1xx_hal_msp.c</name>
 	</file>
 </filestoremove>
 

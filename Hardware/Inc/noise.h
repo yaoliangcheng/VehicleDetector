@@ -24,7 +24,6 @@
 
 
 /******************************************************************************/
-#pragma pack(1)
 typedef struct
 {
 	uint8_t addr;						/* 地址位 */
@@ -42,8 +41,6 @@ typedef struct
 	uint8_t size;										/* 接收数据的长度 */
 	FunctionalState status;								/* 接收状态 */
 } NOISE_RecvTypedef;
-
-#pragma pack()
 
 /******************************************************************************/
 void NOISE_Init(void);

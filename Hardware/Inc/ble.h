@@ -10,7 +10,7 @@
 #include "analog.h"
 
 /******************************************************************************/
-#define BLE_UART 						(huart3)
+#define BLE_UART 						(huart1)
 #define BLE_UART_RX_BYTE_MAX			(30)		/* 加速度传感器串口最大接收字节长度 */
 #define BLE_UART_DMA_RX_GL_FLAG			(DMA_FLAG_GL3)
 
