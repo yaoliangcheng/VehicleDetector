@@ -85,7 +85,7 @@ void PRESSURE_GetPedalForce(void)
  */
 void PRESSURE_GetSteeringWheelForce(void)
 {
-	uint32_t data = 0;
+	int32_t data = 0;
 	char value[7];
 
 	/* 获取24bitAD值 */
@@ -123,7 +123,7 @@ void PRESSURE_GetSteeringWheelForce(void)
  */
 void PRESSURE_GetHandBrakeForce(void)
 {
-	uint32_t data = 0;
+	int32_t data = 0;
 	char value[7];
 
 	/* 获取24bitAD值 */

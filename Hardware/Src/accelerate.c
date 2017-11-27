@@ -17,6 +17,8 @@ extern uint16_t huaTimeBase;
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
+static void AccelerateGradientProcess(ACCELERATE_RecvStrcutTypedef* buffer);
+static void AccelerateSideSlipProcess(ACCELERATE_RecvTypedef* recv);
 
 /*******************************************************************************
  * @brief 加速度模块初始化
@@ -46,7 +48,7 @@ void ACCELERATE_Process(void)
 		ACCELERATE_Recv.status = DISABLE;
 
 		/* 判断帧头 */
-		if (ACCELERATE_Recv.buffer.head != ACCELERATE_PROTOCOL_HEAD)
+		if (ACCELERATE_Recv.buffer[0].head != ACCELERATE_PROTOCOL_HEAD)
 			return;
 
 		/* 校验和 */
@@ -54,26 +56,49 @@ void ACCELERATE_Process(void)
 //			return;
 
 		/* 判断数据类型 */
-		switch (ACCELERATE_Recv.buffer.type)
+		switch (ACCELERATE_Recv.buffer[0].type)
 		{
 		/* 加速度输出 */
 		case ACCELERATE_TYPE_ACCELERATE_SPEED:
-			if (PROCESS_Mode == PROCESS_MODE_DETECTED_BRAKING_DISTANCE)
+			switch (PROCESS_Mode)
 			{
-				AccelerateSpeedProcess(&ACCELERATE_Recv.buffer);
-			}
-			else if (PROCESS_Mode == PROCESS_MODE_DETECTED_DOWN_VELOCITY)
-			{
-				AccelerateDownSpeedProcess(&ACCELERATE_Recv.buffer);
-			}
+			case PROCESS_MODE_DETECTED_BRAKING_DISTANCE:
+				AccelerateSpeedProcess(&ACCELERATE_Recv.buffer[0]);
+				break;
 
+			case PROCESS_MODE_DETECTED_DOWN_VELOCITY:
+				AccelerateDownSpeedProcess(&ACCELERATE_Recv.buffer[0]);
+				break;
+
+			case PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE:
+				AccelerateSideSlipProcess(&ACCELERATE_Recv);
+				break;
+
+			default:
+				break;
+			}
 			break;
 			
 			
 		/* 角度输出 */
 		case ACCELERATE_TYPE_ANGLE:
-			if (PROCESS_Mode == PROCESS_MODE_DETECTED_GRADIENT)
-			AccelerateAngleProcess(&ACCELERATE_Recv.buffer);
+			switch (PROCESS_Mode)
+			{
+			case PROCESS_MODE_DETECTED_STEERING_WHEEL_ANGLE:
+				AccelerateAngleProcess(&ACCELERATE_Recv.buffer[0]);
+				break;
+
+			case PROCESS_MODE_DETECTED_GRADIENT:
+				AccelerateGradientProcess(&ACCELERATE_Recv.buffer[0]);
+				break;
+
+//			case PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE:
+//				AccelerateSideSlipDistanceProcess(&ACCELERATE_Recv);
+//				break;
+
+			default:
+				break;
+			}
 			break;
 
 		default:
@@ -203,7 +228,7 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	
 #if 1
 	/* 避免零点噪声漂移，将绝对值小于0.5的值认为为静止，不积分 */
-	if (fabs(ItemValue.Ax) > 0.05)
+	if (fabs(ItemValue.Ax) > 3)
 	{
 		/* 加速度积分获取速度 */
 		ItemValue.brakeVelocity += ItemValue.Ax*0.01;// * ACCELERATE_INTEGRAL_TIME;
@@ -216,7 +241,7 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 		ItemValue.speed = ItemValue.brakeVelocity * 3.6;
 		/* 加速度为负值，则机动车刹车，开始对速度积分，算位移 */
 		
-		if (ItemValue.Ax < 0)
+		if (ItemValue.Ax < -3)
 		{
 			ItemValue.brakeDistance+=ItemValue.Ax*ItemValue.Ax/20000+ItemValue.brakeVelocity*0.01;
 		}
@@ -275,7 +300,7 @@ static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	/* 加速度零点校准 */
 	ItemValue.downAx -= ItemZeroValue.downAx;
 
-  if(fabs(ItemValue.downAx)>0.05) {ItemValue.downVelocity+=ItemValue.downAx*0.01;huaTimeBase=0;}
+  if(fabs(ItemValue.downAx)>3) {ItemValue.downVelocity+=ItemValue.downAx*0.01;huaTimeBase=0;}
 		else huaTimeBase++;
 	if(huaTimeBase>=30) {huaTimeBase=0;ItemValue.downVelocity=0;}
 	if(ItemValue.downVelocity<0) ItemValue.downVelocity=0;
@@ -320,7 +345,106 @@ static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 }
 
 /*******************************************************************************
- *
+ * @brief 坡度检测，只需检测欧拉角中的俯仰角
  */
+static void AccelerateGradientProcess(ACCELERATE_RecvStrcutTypedef* buffer)
+{
+	char value[7];
+	double angle = 0;
+
+	/* 俯仰角对应data2 */
+	angle = GetAngleValue(buffer->data2);
+	/* 零点校准使能 */
+	if (ItemValueSetZeroEnable.gradient == ENABLE)
+	{
+		ItemValueSetZeroEnable.gradient = DISABLE;
+		ItemZeroValue.gradient = angle;
+		ItemValue.gradient = 0;
+	}
+
+	/* 如果还没校准，直接输出当前坡度 */
+	if (ItemZeroValue.gradient == 0)
+	{
+		ItemValue.gradient = angle;
+	}
+	else /* 如果已经校准后，则输出平均值 */
+	{
+		/* 零点校准 */
+		ItemValue.gradient = ((angle - ItemZeroValue.gradient) - ItemValue.gradient) / 2;
+	}
+
+	/* 输出显示 */
+	sprintf(value, "%6.1f", ItemValue.gradient);
+#if DEVICE_OLED_DISPLAY_ENABLE
+	OLED_ShowString(64, 2, value, 6);
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+	BLE_SendBytes(BLE_DATA_TYPE_GRADIENT, value);
+#endif
+}
+
+/*******************************************************************************
+ * @breif 侧滑量角度
+ */
+static void AccelerateSideSlipProcess(ACCELERATE_RecvTypedef* recv)
+{
+	char value[7];
+
+	/**************************************************************************/
+	/* 获取当前的航向角 */
+	ItemValue.sideSlipAngle = GetAngleValue(recv->buffer[1].data3);
+	/* 零点校准使能 */
+	if (ItemValueSetZeroEnable.sideSlip == ENABLE)
+	{
+		/* 先不要清空标志位，等待加速度校准 */
+//		ItemValueSetZeroEnable.sideSlip = DISABLE;
+		ItemZeroValue.sideSlipAngle = ItemValue.sideSlipAngle;
+	}
+	/* 零点校准 */
+	ItemValue.sideSlipAngle -= ItemZeroValue.sideSlipAngle;
 
 
+	/**************************************************************************/
+	/* x轴加速度在data1位置 */
+	ItemValue.sideSlipAx = GetAccelerateSpeed(recv->buffer[0].data1);
+	/* 零点校准使能 */
+	if (ItemValueSetZeroEnable.sideSlip == ENABLE)
+	{
+		ItemValueSetZeroEnable.sideSlip = DISABLE;
+		/* 将当前值作为校准值 */
+		ItemZeroValue.sideSlipAx = ItemValue.sideSlipAx;
+		/* 校准后清空之前累加的值 */
+		ItemValue.sideSlipDistance = 0;
+	}
+
+	/* 加速度零点校准 */
+	ItemValue.sideSlipAx -= ItemZeroValue.sideSlipAx;
+
+	/* 避免零点噪声漂移，将绝对值小于0.5的值认为为静止，不积分 */
+	if (fabs(ItemValue.sideSlipAx) > 3)
+	{
+		/* 加速度积分获取速度 */
+		ItemValue.sideSlipVelocity += ItemValue.sideSlipAx*0.01;
+		/* 加速度为负值，则机动车刹车，开始对速度积分，算位移 */
+		if (ItemValue.sideSlipAx < -3)
+		{
+			ItemValue.sideSlipDistance+=ItemValue.sideSlipAx*ItemValue.sideSlipAx/20000+ItemValue.sideSlipVelocity*0.01;
+			/* 根据位移和角度，求出偏移量 */
+			ItemValue.sideSlipOffset = ItemValue.sideSlipDistance * sin(ItemValue.sideSlipAngle);
+		}
+		else	/* 否则则证明在加速过程，不累计位移 */
+		{
+//			ItemValue.brakeVelocityInit = 0;
+			//ItemValue.brakeDistance     = 0;   hua
+		}
+	}
+
+	/* 显示实时位移 */
+	sprintf(value, "%6.1f", ItemValue.sideSlipOffset);
+#if DEVICE_OLED_DISPLAY_ENABLE
+	OLED_ShowString(64, 4, value, 6);
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+	BLE_SendBytes(BLE_DATA_TYPE_SIDESLIP_DISTANCE_MAX, value);
+#endif
+}

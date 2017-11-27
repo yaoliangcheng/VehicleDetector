@@ -145,7 +145,7 @@ typedef struct
 
 typedef struct
 {
-	ACCELERATE_RecvStrcutTypedef buffer;		/* 接收二级缓存 */
+	ACCELERATE_RecvStrcutTypedef buffer[5];		/* 接收二级缓存 */
 	uint8_t size;								/* 接收数据的长度 */
 	FunctionalState status;						/* 接收状态 */
 } ACCELERATE_RecvTypedef;

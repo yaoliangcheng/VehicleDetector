@@ -69,8 +69,11 @@ typedef enum
 	BLE_DATA_TYPE_DOWN_VELOCITY,						/* 实时货叉下降速度 */
 	BLE_DATA_TYPE_DOWN_VELOCITY_MAX,					/* 货叉最大下降速度 */
 
+	/* 坡度检测 */
+	BLE_DATA_TYPE_GRADIENT = 0x90,						/* 坡度值 */
+
 	/* 锂电池电量 */
-	BLE_DATA_TYPE_BATTERY_CAPACITY = 0X90,				/* 电池电量 */
+	BLE_DATA_TYPE_BATTERY_CAPACITY = 0XA0,				/* 电池电量 */
 } BLE_CmdDataTypeEnum;
 
 typedef enum

@@ -66,12 +66,18 @@ void BLE_UartIdleDeal(void)
  */
 void BLE_SendBytes(BLE_CmdDataTypeEnum type, char* value)
 {
+	/* 蓝牙发送结构体固定值 */
+	BLE_SendStruct.head = BLE_PROTOCOL_HEAD;
+	BLE_SendStruct.length = 6;
+	BLE_SendStruct.tail = BLE_PROTOCOL_TAIL;
+
 	/* 将发送的数据缓存到发送缓存 */
 	memcpy(BLE_SendStruct.data, value, sizeof(BLE_SendStruct.data));
 	/* 数据类型 */
 	BLE_SendStruct.type = type;
 	/* 计算校验和 */
 	BLE_SendStruct.verify = CheckSum(&BLE_SendStruct.type, 7);
+
 	/* 串口发送 */
 	HAL_UART_Transmit_DMA(&BLE_UART, (uint8_t*)&BLE_SendStruct,
 					sizeof(BLE_SendStructTypedef));
@@ -179,6 +185,8 @@ void BLE_Process(void)
 
 		/* 开启侧滑量检测 */
 		case BLE_CMD_TYPE_DETECTED_SIDESLIP_DISTANCE:
+			/* 打开加速度和角度检测 */
+			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ACCELERATE_SPEED_MARK | ACCELERATE_TYPE_ANGLE_MARK, 0x00);
 			PROCESS_Mode = PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE;
 			OLED_Clear();
 			break;

@@ -38,8 +38,15 @@ typedef struct
 	double pedalForce;								/* 踏板力 */
 	double handBrakeForce;							/* 手刹力 */
 	float  noise;									/* 噪声值 */
+	double sideSlipAngle;							/* 侧滑量角度 */
+	double sideSlipAx;								/* 侧滑量加速度 */
+	double sideSlipVelocity;						/* 侧滑量速度 */
+	double sideSlipDistance;						/* 侧滑量距离 */
+	double sideSlipOffset;							/* 侧滑量 */
 	double downAx;									/* 下降加速度 */
 	double downVelocity;							/* 下降速度 */
+	double gradientAverage;							/* 坡度平均值 */
+	double gradient;								/* 坡度值 */
 	uint8_t batteryCapacity;						/* 电池电量 */
 } ItemValueTypedef;
 
@@ -51,7 +58,9 @@ typedef struct
 	FunctionalState pedalForce;								/* 踏板力 */
 	FunctionalState handBrakeForce;							/* 手刹力 */
 	FunctionalState noise;									/* 噪声值 */
+	FunctionalState sideSlip;								/* 侧滑量 */
 	FunctionalState downVelocity;							/* 下降速度 */
+	FunctionalState gradient;								/* 坡度值 */
 	FunctionalState batteryCapacity;						/* 电池电量 */
 } ItemValueSetZeroEnableTypedef;
 
@@ -63,7 +72,12 @@ typedef struct
 	double pedalForce;								/* 踏板力零点值 */
 	double handBrakeForce;							/* 手刹力零点值 */
 	float  noise;									/* 噪声零点值 */
+	double sideSlipAngle;							/* 侧滑量角度 */
+	double sideSlipAx;								/* 侧滑量加速度 */
+	double sideSlipVelocity;						/* 侧滑量速度 */
+	double sideSlipDistance;						/* 侧滑量距离 */
 	double downAx;									/* 下降加速度 */
+	double gradient;								/* 坡度值 */
 } ItemZeroValueTypedef;
 
 /******************************************************************************/

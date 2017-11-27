@@ -49,6 +49,7 @@ void PROCESS(void)
 
 	/* 侧滑量检测 */
 	case PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE:
+		ACCELERATE_Process();
 		break;
 
 	/* 货叉下降速度检测 */
@@ -109,9 +110,19 @@ void ZeroCalibration(void)
 		ItemValueSetZeroEnable.brakeAx = ENABLE;
 		break;
 
+	case PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE:
+		ItemValueSetZeroEnable.sideSlip = ENABLE;
+		break;
+
 	case PROCESS_MODE_DETECTED_DOWN_VELOCITY:
 		ItemValueSetZeroEnable.downVelocity = ENABLE;
 		break;
+
+
+	case PROCESS_MODE_DETECTED_GRADIENT:
+		ItemValueSetZeroEnable.gradient = ENABLE;
+		break;
+
 	default:
 		break;
 	}
