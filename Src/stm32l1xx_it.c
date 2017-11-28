@@ -40,11 +40,12 @@
 #include "noise.h"
 #include "ble.h"
 #include "analog.h"
-
+#include "ultrasonicwave.h"
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc;
+extern TIM_HandleTypeDef htim7;
 extern DMA_HandleTypeDef hdma_usart1_tx;
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart2_rx;
@@ -316,8 +317,8 @@ void USART1_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
-	NOISE_UartIdleDeal();
-
+//	NOISE_UartIdleDeal();
+	ULTRASONICWAVE_UartIdleDeal();
   /* USER CODE END USART2_IRQn 0 */
   HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */
@@ -338,6 +339,22 @@ void USART3_IRQHandler(void)
   /* USER CODE BEGIN USART3_IRQn 1 */
 
   /* USER CODE END USART3_IRQn 1 */
+}
+
+/**
+* @brief This function handles TIM7 global interrupt.
+*/
+void TIM7_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM7_IRQn 0 */
+	uint8_t cmd = 0x55;
+
+	HAL_UART_Transmit_DMA(&NOISE_UART, (uint8_t*)&cmd, 1);
+  /* USER CODE END TIM7_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim7);
+  /* USER CODE BEGIN TIM7_IRQn 1 */
+
+  /* USER CODE END TIM7_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

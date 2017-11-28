@@ -110,8 +110,10 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
+  MX_TIM7_Init();
 
   /* USER CODE BEGIN 2 */
+
   ACCELERATE_Init();
   BLE_Init();
   PRESSURE_Init();

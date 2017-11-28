@@ -1,5 +1,5 @@
 #include "process.h"
-
+#include "ultrasonicwave.h"
 /******************************************************************************/
 PROCESS_ModeEnum PROCESS_Mode = PROCESS_MODE_INVALID;
 ItemValueTypedef     ItemValue;
@@ -58,7 +58,7 @@ void PROCESS(void)
 
 	/* 货叉下降速度检测 */
 	case PROCESS_MODE_DETECTED_DOWN_VELOCITY:
-		ACCELERATE_Process();
+		ULTRASONICWAVE_Process();
 		break;
 
 	/* 坡度检测 */
@@ -67,11 +67,11 @@ void PROCESS(void)
 		break;
 
 	/* 锂电池电量检测 */
-	case PROCESS_MODE_DETECTED_BATTERY_CAPACITY:
-		ANALOG_Process();
-		/* 锂电池电量检测，只检测一次 */
-		PROCESS_Mode = PROCESS_MODE_INVALID;
-		break;
+//	case PROCESS_MODE_DETECTED_BATTERY_CAPACITY:
+//		ANALOG_Process();
+//		/* 锂电池电量检测，只检测一次 */
+//		PROCESS_Mode = PROCESS_MODE_INVALID;
+//		break;
 
 	default:
 		break;

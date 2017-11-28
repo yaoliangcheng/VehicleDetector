@@ -10,6 +10,10 @@
 #define ULTRASONICWAVE_HEAD					(0xFF)
 #define ULTRASONICWAVE_TIME_PERIOD			(0.1)	/* 超声波获取周期，单位s */
 
+#define ULTRASONICWAVE_UART					(huart2)
+#define ULTRASONICWAVE_UART_DMA_RX_GL_FLAG	(DMA_FLAG_GL6)
+#define ULTRASONICWAVE_UART_RX_BYTE_MAX		(20)
+
 /******************************************************************************/
 typedef struct
 {
@@ -25,5 +29,9 @@ typedef struct
 	uint8_t size;										/* 接收数据的长度 */
 	FunctionalState status;								/* 接收状态 */
 } ULTRASONICWAVE_RecvTypedef;
+
+/******************************************************************************/
+void ULTRASONICWAVE_Process(void);
+void ULTRASONICWAVE_UartIdleDeal(void);
 
 #endif

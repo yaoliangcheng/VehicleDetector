@@ -16,7 +16,7 @@ extern uint16_t huaTimeBase;
 /******************************************************************************/
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer);
-static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
+//static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateGradientProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateSideSlipProcess(ACCELERATE_RecvTypedef* recv);
 
@@ -67,7 +67,7 @@ void ACCELERATE_Process(void)
 				break;
 
 			case PROCESS_MODE_DETECTED_DOWN_VELOCITY:
-				AccelerateDownSpeedProcess(&ACCELERATE_Recv.buffer[0]);
+//				AccelerateDownSpeedProcess(&ACCELERATE_Recv.buffer[0]);
 				break;
 
 			case PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE:
@@ -282,37 +282,37 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 /*******************************************************************************
  * @brief 下降速度计算
  */
-static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
-{
-	char value[7];
-	/* x轴加速度在data1位置 */
-	ItemValue.downAx = GetAccelerateSpeed(buffer->data1);
-	/* 零点校准使能 */
-	if (ItemValueSetZeroEnable.downVelocity == ENABLE)
-	{
-		ItemValueSetZeroEnable.downVelocity = DISABLE;
-		/* 将当前值作为校准值 */
-		ItemZeroValue.downAx = ItemValue.downAx;
-		/* 校准后清空之前累加的值 */
-		ItemValue.downVelocity = 0;
-	}
+//static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
+//{
+//	char value[7];
+//	/* x轴加速度在data1位置 */
+//	ItemValue.downAx = GetAccelerateSpeed(buffer->data1);
+//	/* 零点校准使能 */
+//	if (ItemValueSetZeroEnable.downVelocity == ENABLE)
+//	{
+//		ItemValueSetZeroEnable.downVelocity = DISABLE;
+//		/* 将当前值作为校准值 */
+//		ItemZeroValue.downAx = ItemValue.downAx;
+//		/* 校准后清空之前累加的值 */
+//		ItemValue.downVelocity = 0;
+//	}
 
-	/* 加速度零点校准 */
-	ItemValue.downAx -= ItemZeroValue.downAx;
+//	/* 加速度零点校准 */
+//	ItemValue.downAx -= ItemZeroValue.downAx;
 
-  if(fabs(ItemValue.downAx)>3) {ItemValue.downVelocity+=ItemValue.downAx*0.01;huaTimeBase=0;}
-		else huaTimeBase++;
-	if(huaTimeBase>=30) {huaTimeBase=0;ItemValue.downVelocity=0;}
-	if(ItemValue.downVelocity<0) ItemValue.downVelocity=0;
-	/* 显示实时速度 */
-	sprintf(value, "%6.1f", ItemValue.downVelocity);
-#if DEVICE_OLED_DISPLAY_ENABLE
-	OLED_ShowString(64, 2, value, 6);
-#endif
-#if DEVICE_BLE_SEND_ENABLE
-	BLE_SendBytes(BLE_DATA_TYPE_DOWN_VELOCITY, value);
-#endif
-}
+//  if(fabs(ItemValue.downAx)>3) {ItemValue.downVelocity+=ItemValue.downAx*0.01;huaTimeBase=0;}
+//		else huaTimeBase++;
+//	if(huaTimeBase>=30) {huaTimeBase=0;ItemValue.downVelocity=0;}
+//	if(ItemValue.downVelocity<0) ItemValue.downVelocity=0;
+//	/* 显示实时速度 */
+//	sprintf(value, "%6.1f", ItemValue.downVelocity);
+//#if DEVICE_OLED_DISPLAY_ENABLE
+//	OLED_ShowString(64, 2, value, 6);
+//#endif
+//#if DEVICE_BLE_SEND_ENABLE
+//	BLE_SendBytes(BLE_DATA_TYPE_DOWN_VELOCITY, value);
+//#endif
+//}
 
 /*******************************************************************************
  * @brief 方向盘转角检测

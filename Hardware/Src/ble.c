@@ -1,7 +1,7 @@
 #include "../Inc/ble.h"
 #include "oled.h"
 #include "process.h"
-
+#include "tim.h"
 /******************************************************************************/
 uint8_t BLE_RecvBytes[BLE_UART_RX_BYTE_MAX];
 BLE_RecvTypedef BLE_Recv;
@@ -197,6 +197,8 @@ void BLE_Process(void)
 		/* 开启货叉下降速度检测 */
 		case BLE_CMD_TYPE_DETECTED_DOWN_VELOCITY:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_DOWN_VELOCITY;
+			__HAL_TIM_ENABLE(&htim7);
+			__HAL_TIM_ENABLE_IT(&htim7, TIM_IT_UPDATE);
 			OLED_Clear();
 			OLED_ShowChineseString(0, 0, (char*)ChineseFont_DownVelocityTitle,
 						sizeof(ChineseFont_DownVelocityTitle) / CHINESE_FONT_SIZE);
