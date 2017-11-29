@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
-<ProjectName>E:\&#39038;&#32769;&#24072;&#39033;&#30446;\&#21378;&#20869;&#26426;&#21160;&#36710;&#26234;&#33021;&#26816;&#27979;&#31995;&#32479;\01_Program\VehicleDetector\\VehicleDetector</ProjectName>
+<ProjectName>E:\MyWork\1_MyDataSheet\&#25105;&#30340;&#39033;&#30446;\&#21378;&#20869;&#26426;&#21160;&#36710;&#26234;&#33021;&#26816;&#27979;&#31995;&#32479;\01_Program\&#26032;&#24314;&#25991;&#20214;&#22841;\VehicleDetector\\VehicleDetector</ProjectName>
 <CMSIS>..\Drivers\CMSIS</CMSIS>
-<HAL_Driver>D:\STM32CubeLib\STM32Cube_FW_L1_V1.8.0\Drivers\CMSIS</HAL_Driver>
+<HAL_Driver>D:\STM32CubeLib\Response\STM32Cube_FW_L1_V1.8.0\Drivers\CMSIS</HAL_Driver>
 
 <Toolchain>MDK-ARM</Toolchain>
 	<Toolversion>5</Toolversion>
@@ -47,13 +47,13 @@
 	    	<include></include>
     </Aincludes>
     <Cdefines>
+        <define>USE_FULL_LL_DRIVER</define>
     </Cdefines>
     <definestoremove>
         <Adefines>
             <define></define>
         </Adefines>
         <Cdefines>
-            <define>USE_FULL_LL_DRIVER</define>
             <define>MBEDTLS_CONFIG_FILE=&lt;mbedtls_config.h&gt;</define>
             <define>_TIMEVAL_DEFINED</define>
             <define>_SYS_TIME_H_</define>
@@ -78,6 +78,12 @@
 		   <group>
 		 		<name>STM32L1xx_HAL_Driver</name>
 						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_utils.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_exti.c</name>
+						</file>
+						<file>
 							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_adc.c</name>
 						</file>
 						<file>
@@ -91,6 +97,21 @@
 						</file>
 						<file>
 							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_uart.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_usart.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_rcc.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_gpio.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_exti.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_dma.c</name>
 						</file>
 						<file>
 							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal.c</name>

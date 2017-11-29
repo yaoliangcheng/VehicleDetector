@@ -15,22 +15,18 @@ extern ItemZeroValueTypedef ItemZeroValue;
 extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
 /*******************************************************************************
- * @brief 噪音模块初始化
- */
-void NOISE_Init(void)
-{
-	UART_DMAIdleConfig(&NOISE_UART, NOISE_RecvBytes, NOISE_UART_RX_BYTE_MAX);
-}
-
-/*******************************************************************************
  * @brief 请求噪音数据
  */
 void NOISE_Require(void)
 {
-	HAL_UART_Transmit_DMA(&NOISE_UART, (uint8_t*)NOISE_RequireCmd,
-			sizeof(NOISE_RequireCmd));
-	/* 让噪音采集不那么频繁 */
-	HAL_Delay(100);
+	uint8_t cnt = sizeof(NOISE_RequireCmd);
+	uint8_t* pData = NOISE_RequireCmd;
+
+	while (cnt--)
+	{
+		LL_USART_TransmitData8(USART2, *pData);
+		pData++;
+	}
 }
 
 /*******************************************************************************
@@ -78,27 +74,27 @@ void NOISE_Process(void)
  */
 void NOISE_UartIdleDeal(void)
 {
-	uint32_t tmp_flag = 0, tmp_it_source = 0;
+//	uint32_t tmp_flag = 0, tmp_it_source = 0;
 
-	tmp_flag      = __HAL_UART_GET_FLAG(&NOISE_UART, UART_FLAG_IDLE);
-	tmp_it_source = __HAL_UART_GET_IT_SOURCE(&NOISE_UART, UART_IT_IDLE);
-	if((tmp_flag != RESET) && (tmp_it_source != RESET))
-	{
-		__HAL_DMA_DISABLE(NOISE_UART.hdmarx);
-		__HAL_DMA_CLEAR_FLAG(NOISE_UART.hdmarx, NOISE_UART_DMA_RX_GL_FLAG);
+//	tmp_flag      = __HAL_UART_GET_FLAG(&NOISE_UART, UART_FLAG_IDLE);
+//	tmp_it_source = __HAL_UART_GET_IT_SOURCE(&NOISE_UART, UART_IT_IDLE);
+//	if((tmp_flag != RESET) && (tmp_it_source != RESET))
+//	{
+//		__HAL_DMA_DISABLE(NOISE_UART.hdmarx);
+//		__HAL_DMA_CLEAR_FLAG(NOISE_UART.hdmarx, NOISE_UART_DMA_RX_GL_FLAG);
 
-		/* Clear Uart IDLE Flag */
-		__HAL_UART_CLEAR_IDLEFLAG(&NOISE_UART);
+//		/* Clear Uart IDLE Flag */
+//		__HAL_UART_CLEAR_IDLEFLAG(&NOISE_UART);
 
-		NOISE_Recv.size = NOISE_UART_RX_BYTE_MAX
-						- __HAL_DMA_GET_COUNTER(NOISE_UART.hdmarx);
+//		NOISE_Recv.size = NOISE_UART_RX_BYTE_MAX
+//						- __HAL_DMA_GET_COUNTER(NOISE_UART.hdmarx);
 
-		memcpy(&NOISE_Recv.buffer, NOISE_RecvBytes, NOISE_Recv.size);
-		NOISE_Recv.status = ENABLE;
+//		memcpy(&NOISE_Recv.buffer, NOISE_RecvBytes, NOISE_Recv.size);
+//		NOISE_Recv.status = ENABLE;
 
-		memset(NOISE_RecvBytes, 0, NOISE_Recv.size);
+//		memset(NOISE_RecvBytes, 0, NOISE_Recv.size);
 
-		NOISE_UART.hdmarx->Instance->CNDTR = NOISE_UART.RxXferSize;
-		__HAL_DMA_ENABLE(NOISE_UART.hdmarx);
-	}
+//		NOISE_UART.hdmarx->Instance->CNDTR = NOISE_UART.RxXferSize;
+//		__HAL_DMA_ENABLE(NOISE_UART.hdmarx);
+//	}
 }

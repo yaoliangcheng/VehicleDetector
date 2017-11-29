@@ -41,6 +41,11 @@
 #include "ble.h"
 #include "analog.h"
 #include "ultrasonicwave.h"
+
+extern uint8_t Uart2RecvBuffer[50];
+extern NOISE_RecvTypedef NOISE_Recv;
+extern ULTRASONICWAVE_RecvTypedef ULTRASONICWAVE_Recv;
+
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -48,12 +53,9 @@ extern DMA_HandleTypeDef hdma_adc;
 extern TIM_HandleTypeDef htim7;
 extern DMA_HandleTypeDef hdma_usart1_tx;
 extern DMA_HandleTypeDef hdma_usart1_rx;
-extern DMA_HandleTypeDef hdma_usart2_rx;
-extern DMA_HandleTypeDef hdma_usart2_tx;
 extern DMA_HandleTypeDef hdma_usart3_rx;
 extern DMA_HandleTypeDef hdma_usart3_tx;
 extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 
 /******************************************************************************/
@@ -277,7 +279,7 @@ void DMA1_Channel6_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel6_IRQn 0 */
 
   /* USER CODE END DMA1_Channel6_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart2_rx);
+  
   /* USER CODE BEGIN DMA1_Channel6_IRQn 1 */
 
   /* USER CODE END DMA1_Channel6_IRQn 1 */
@@ -291,7 +293,7 @@ void DMA1_Channel7_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel7_IRQn 0 */
 
   /* USER CODE END DMA1_Channel7_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart2_tx);
+  
   /* USER CODE BEGIN DMA1_Channel7_IRQn 1 */
 
   /* USER CODE END DMA1_Channel7_IRQn 1 */
@@ -317,10 +319,39 @@ void USART1_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
-//	NOISE_UartIdleDeal();
-	ULTRASONICWAVE_UartIdleDeal();
+	if (LL_USART_IsActiveFlag_IDLE(USART2))
+	{
+		LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_6);
+		LL_DMA_ClearFlag_GI6(DMA1);
+
+		LL_USART_ClearFlag_IDLE(USART2);
+
+		if (PROCESS_Mode == PROCESS_MODE_DETECTED_NOISE)
+		{
+			NOISE_Recv.size = sizeof(Uart2RecvBuffer)
+						- LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_6);
+
+			memcpy(&NOISE_Recv.buffer, Uart2RecvBuffer, NOISE_Recv.size);
+			NOISE_Recv.status = ENABLE;
+
+			memset(Uart2RecvBuffer, 0, NOISE_Recv.size);
+		}
+		else if (PROCESS_Mode == PROCESS_MODE_DETECTED_DOWN_VELOCITY)
+		{
+			ULTRASONICWAVE_Recv.size = sizeof(Uart2RecvBuffer)
+						- LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_6);
+
+			memcpy(&ULTRASONICWAVE_Recv.buffer, Uart2RecvBuffer, ULTRASONICWAVE_Recv.size);
+			ULTRASONICWAVE_Recv.status = ENABLE;
+
+			memset(Uart2RecvBuffer, 0, ULTRASONICWAVE_Recv.size);
+		}
+
+
+		LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_6, sizeof(Uart2RecvBuffer));
+		LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_6);
+	}
   /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */
 
   /* USER CODE END USART2_IRQn 1 */
@@ -347,9 +378,15 @@ void USART3_IRQHandler(void)
 void TIM7_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM7_IRQn 0 */
-	uint8_t cmd = 0x55;
-
-	HAL_UART_Transmit_DMA(&NOISE_UART, (uint8_t*)&cmd, 1);
+	if (PROCESS_Mode == PROCESS_MODE_DETECTED_NOISE)
+	{
+		NOISE_Require();
+	}
+	else if (PROCESS_Mode == PROCESS_MODE_DETECTED_DOWN_VELOCITY)
+	{
+		ULTRASONICWAVE_Require();
+	}
+//	HAL_UART_Transmit_DMA(&NOISE_UART, (uint8_t*)&cmd, 1);
   /* USER CODE END TIM7_IRQn 0 */
   HAL_TIM_IRQHandler(&htim7);
   /* USER CODE BEGIN TIM7_IRQn 1 */

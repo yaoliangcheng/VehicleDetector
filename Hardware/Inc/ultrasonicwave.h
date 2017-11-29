@@ -31,6 +31,7 @@ typedef struct
 } ULTRASONICWAVE_RecvTypedef;
 
 /******************************************************************************/
+void ULTRASONICWAVE_Require(void);
 void ULTRASONICWAVE_Process(void);
 void ULTRASONICWAVE_UartIdleDeal(void);
 

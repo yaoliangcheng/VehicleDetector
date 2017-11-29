@@ -113,11 +113,11 @@ int main(void)
   MX_TIM7_Init();
 
   /* USER CODE BEGIN 2 */
+  USART2_UserInit();
 
   ACCELERATE_Init();
   BLE_Init();
   PRESSURE_Init();
-  NOISE_Init();
 
   OLED_Init();
 	OLED_ShowChineseString(0, 2, (char*)ChineseFont_Welcome,
