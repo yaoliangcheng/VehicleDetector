@@ -151,6 +151,7 @@ void BLE_Process(void)
 		/* 开启制动距离检测 */
 		case BLE_CMD_TYPE_DETECTED_BRAKING_DISTANCE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_BRAKING_DISTANCE;
+			LL_TIM_SetCounter(TIM3, 0);
 			/* 开启定时器 */
 			LL_TIM_SetCounter(TIM7, 0);
 			LL_TIM_EnableCounter(TIM7);
@@ -225,11 +226,11 @@ void BLE_Process(void)
 			break;
 
 		/* 开启电池电量检测 */
-		case BLE_CMD_TYPE_DETECTED_BATTERY_CAPACITY:
-			ANALOG_ConvertEnable();
-			PROCESS_Mode = PROCESS_MODE_DETECTED_BATTERY_CAPACITY;
-			OLED_Clear();
-			break;
+//		case BLE_CMD_TYPE_DETECTED_BATTERY_CAPACITY:
+//			ANALOG_ConvertEnable();
+//			PROCESS_Mode = PROCESS_MODE_DETECTED_BATTERY_CAPACITY;
+//			OLED_Clear();
+//			break;
 
 		default:
 			break;

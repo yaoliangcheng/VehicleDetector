@@ -114,6 +114,8 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   LL_TIM_EnableIT_UPDATE(TIM7);
+  LL_TIM_EnableIT_UPDATE(TIM3);
+
   USART2_UserInit();
 
   ACCELERATE_Init();

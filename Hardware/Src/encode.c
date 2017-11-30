@@ -5,6 +5,10 @@ uint16_t Encode_plusCnt = 0;				/* ±‡¬Î∆˜¬ˆ≥Â ˝ */
 uint16_t Encode_plusCntOld = 0;				/* ±‡¬Î∆˜æ…¬ˆ≥Â ˝ */
 uint16_t Encode_periodCnt = 0;
 FunctionalState Encode_processEnable;		/* ±‡¬Î∆˜Process πƒ‹ */
+FunctionalState Encode_initEnable;
+
+extern double BrakeDistance_speed;
+extern double BrakeDistance_distance;
 
 /*******************************************************************************
  *
@@ -15,6 +19,7 @@ void ENCODE_Process(void)
 	{
 		Encode_processEnable = DISABLE;
 
+		/* º∆À„±‡¬Î∆˜¬ˆ≥Â ˝ */
 		if (Encode_plusCnt > Encode_plusCntOld)
 		{
 			Encode_plusCnt -= Encode_plusCntOld;
@@ -27,18 +32,32 @@ void ENCODE_Process(void)
 		Encode_plusCntOld = Encode_plusCnt;
 
 		/* º∆À„ÀŸ∂» */
-		BrakeDistance_Speed = ((ENCODE_WHEEL_PERIMETER / ENCODE_PERIOD_PLUS_CNT)
+		BrakeDistance_speed = ((ENCODE_WHEEL_PERIMETER / ENCODE_PERIOD_PLUS_CNT)
 								* Encode_plusCnt) / 0.1;
 		/* º∆À„æ‡¿Î */
-		BrakeDistance_Distance = (Encode_periodCnt * ENCODE_WHEEL_PERIMETER)
+		BrakeDistance_distance = (Encode_periodCnt * ENCODE_WHEEL_PERIMETER)
 				+ ((ENCODE_WHEEL_PERIMETER / ENCODE_PERIOD_PLUS_CNT)
 				* Encode_plusCnt);
 
-
+		/* ø™ º÷∆∂Ø */
+		if (BrakeDistance_speed < BrakeDistance_oldSpeed)
+		{
+			if (Encode_initEnable == DISABLE)
+			{
+				Encode_initEnable = ENABLE;
+				LL_TIM_SetCounter(TIM3, 0);
+				Encode_plusCntOld = 0;
+				Encode_periodCnt = 0;
+			}
+			BrakeDistance_brakeDistance = (Encode_periodCnt * ENCODE_WHEEL_PERIMETER)
+				+ ((ENCODE_WHEEL_PERIMETER / ENCODE_PERIOD_PLUS_CNT)
+				* Encode_plusCnt);
+		}
+		else
+		{
+			Encode_initEnable = DISABLE;
+		}
 	}
-
-
-
 }
 
 

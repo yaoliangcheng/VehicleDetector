@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
-<ProjectName>E:\MyWork\1_MyDataSheet\&#25105;&#30340;&#39033;&#30446;\&#21378;&#20869;&#26426;&#21160;&#36710;&#26234;&#33021;&#26816;&#27979;&#31995;&#32479;\01_Program\VehicleDetector\\VehicleDetector</ProjectName>
+<ProjectName>E:\&#39038;&#32769;&#24072;&#39033;&#30446;\&#21378;&#20869;&#26426;&#21160;&#36710;&#26234;&#33021;&#26816;&#27979;&#31995;&#32479;\01_Program\VehicleDetector\\VehicleDetector</ProjectName>
 <CMSIS>..\Drivers\CMSIS</CMSIS>
-<HAL_Driver>D:\STM32CubeLib\Response\STM32Cube_FW_L1_V1.8.0\Drivers\CMSIS</HAL_Driver>
+<HAL_Driver>D:\STM32CubeLib\STM32Cube_FW_L1_V1.8.0\Drivers\CMSIS</HAL_Driver>
 
 <Toolchain>MDK-ARM</Toolchain>
 	<Toolversion>5</Toolversion>

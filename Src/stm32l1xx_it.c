@@ -41,16 +41,19 @@
 #include "ble.h"
 #include "analog.h"
 #include "ultrasonicwave.h"
+#include "encode.h"
 
 extern uint8_t Uart2RecvBuffer[50];
 extern NOISE_RecvTypedef NOISE_Recv;
 extern ULTRASONICWAVE_RecvTypedef ULTRASONICWAVE_Recv;
 
+extern uint16_t Encode_plusCnt;
+extern FunctionalState Encode_processEnable;
+extern uint16_t Encode_periodCnt;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc;
-extern TIM_HandleTypeDef htim3;
 extern DMA_HandleTypeDef hdma_usart1_tx;
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart3_rx;
@@ -305,9 +308,13 @@ void DMA1_Channel7_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-	Encode_periodCnt++;
+	if (LL_TIM_IsActiveFlag_UPDATE(TIM3))
+	{
+		LL_TIM_ClearFlag_UPDATE(TIM3);
+		Encode_periodCnt++;
+	}
+
   /* USER CODE END TIM3_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
 
   /* USER CODE END TIM3_IRQn 1 */
@@ -390,26 +397,32 @@ void USART3_IRQHandler(void)
 void TIM7_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM7_IRQn 0 */
-	switch (PROCESS_Mode)
+	if (LL_TIM_IsActiveFlag_UPDATE(TIM7))
 	{
-	case PROCESS_MODE_DETECTED_NOISE:
-		NOISE_Require();
-		break;
+		LL_TIM_ClearFlag_UPDATE(TIM7);
 
-	case PROCESS_MODE_DETECTED_DOWN_VELOCITY:
-		ULTRASONICWAVE_Require();
-		break;
+		switch (PROCESS_Mode)
+		{
+		case PROCESS_MODE_DETECTED_NOISE:
+			NOISE_Require();
+			break;
 
-	case BLE_CMD_TYPE_DETECTED_BRAKING_DISTANCE:
-		/* 获取TIM值 */
-		Encode_plusCnt = LL_TIM_GetCounter(TIM3);
-		/* Enable Process */
-		Encode_processEnable = ENABLE;
-		break;
+		case PROCESS_MODE_DETECTED_DOWN_VELOCITY:
+			ULTRASONICWAVE_Require();
+			break;
 
-	default:
-		break;
+		case PROCESS_MODE_DETECTED_BRAKING_DISTANCE:
+			/* 获取TIM值 */
+			Encode_plusCnt = LL_TIM_GetCounter(TIM3);
+			/* Enable Process */
+			Encode_processEnable = ENABLE;
+			break;
+
+		default:
+			break;
+		}
 	}
+
 //	HAL_UART_Transmit_DMA(&NOISE_UART, (uint8_t*)&cmd, 1);
   /* USER CODE END TIM7_IRQn 0 */
   /* USER CODE BEGIN TIM7_IRQn 1 */

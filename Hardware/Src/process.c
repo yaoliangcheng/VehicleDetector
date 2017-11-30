@@ -8,9 +8,10 @@ ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
 
 /* 制动距离检测 */
-double BrakeDistance_speed;
-double BrakeDistance_distance;
-double BrakeDistance_brakeDistance;
+double BrakeDistance_speed;						/* 制动检测——实时速度 */
+double BrakeDistance_oldSpeed;					/* 制动检测-旧速度 */
+double BrakeDistance_distance;					/* 制动检测-距离 */
+double BrakeDistance_brakeDistance;				/* 制动检测-制动距离 */
 
 /* 货叉下降速度检测 */
 uint16_t DownVelocity_Distance;
@@ -73,11 +74,11 @@ void PROCESS(void)
 		break;
 
 	/* 锂电池电量检测 */
-//	case PROCESS_MODE_DETECTED_BATTERY_CAPACITY:
-//		ANALOG_Process();
-//		/* 锂电池电量检测，只检测一次 */
-//		PROCESS_Mode = PROCESS_MODE_INVALID;
-//		break;
+	case PROCESS_MODE_DETECTED_BATTERY_CAPACITY:
+		ANALOG_Process();
+		/* 锂电池电量检测，只检测一次 */
+		PROCESS_Mode = PROCESS_MODE_INVALID;
+		break;
 
 	default:
 		break;
