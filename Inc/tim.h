@@ -45,6 +45,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l1xx_hal.h"
+#include "stm32l1xx_ll_tim.h"
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
@@ -52,7 +53,6 @@
 /* USER CODE END Includes */
 
 extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim7;
 
 /* USER CODE BEGIN Private defines */
 

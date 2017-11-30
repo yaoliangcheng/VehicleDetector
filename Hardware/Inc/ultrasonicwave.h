@@ -13,6 +13,7 @@
 #define ULTRASONICWAVE_UART					(huart2)
 #define ULTRASONICWAVE_UART_DMA_RX_GL_FLAG	(DMA_FLAG_GL6)
 #define ULTRASONICWAVE_UART_RX_BYTE_MAX		(20)
+//#define ULTRASONICWAVE_PERIOD				(99)
 
 /******************************************************************************/
 typedef struct

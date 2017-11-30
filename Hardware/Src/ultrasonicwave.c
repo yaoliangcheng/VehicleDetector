@@ -9,7 +9,7 @@ ULTRASONICWAVE_RecvTypedef ULTRASONICWAVE_Recv;
 extern uint16_t DownVelocity_Distance;
 extern uint16_t DownVelocity_DistanceOld;
 extern double   DownVelocity_Speed;
-extern uint8_t NOISE_RecvBytes[NOISE_UART_RX_BYTE_MAX];
+extern uint8_t  NOISE_RecvBytes[NOISE_UART_RX_BYTE_MAX];
 
 /*******************************************************************************
  *

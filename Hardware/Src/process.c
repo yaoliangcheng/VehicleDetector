@@ -6,6 +6,12 @@ ItemValueTypedef     ItemValue;
 ItemZeroValueTypedef ItemZeroValue;
 ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
+
+/* 制动距离检测 */
+double BrakeDistance_speed;
+double BrakeDistance_distance;
+double BrakeDistance_brakeDistance;
+
 /* 货叉下降速度检测 */
 uint16_t DownVelocity_Distance;
 uint16_t DownVelocity_DistanceOld;

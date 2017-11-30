@@ -96,13 +96,7 @@
 							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_tim_ex.c</name>
 						</file>
 						<file>
-							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_uart.c</name>
-						</file>
-						<file>
-							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_usart.c</name>
-						</file>
-						<file>
-							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_rcc.c</name>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_tim.c</name>
 						</file>
 						<file>
 							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_gpio.c</name>
@@ -112,6 +106,15 @@
 						</file>
 						<file>
 							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_dma.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal_uart.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_usart.c</name>
+						</file>
+						<file>
+							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_ll_rcc.c</name>
 						</file>
 						<file>
 							<name>../Drivers/STM32L1xx_HAL_Driver/Src/stm32l1xx_hal.c</name>

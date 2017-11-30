@@ -151,8 +151,12 @@ void BLE_Process(void)
 		/* 开启制动距离检测 */
 		case BLE_CMD_TYPE_DETECTED_BRAKING_DISTANCE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_BRAKING_DISTANCE;
+			/* 开启定时器 */
+			LL_TIM_SetCounter(TIM7, 0);
+			LL_TIM_EnableCounter(TIM7);
+
 			/* 设置加速度信息回传 */
-			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ACCELERATE_SPEED_MARK, 0x00);
+//			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ACCELERATE_SPEED_MARK, 0x00);
 			OLED_Clear();
 			OLED_ShowChineseString(0, 0, (char*)ChineseFont_BrakingDistance,
 					sizeof(ChineseFont_BrakingDistance) / CHINESE_FONT_SIZE);
@@ -181,6 +185,9 @@ void BLE_Process(void)
 		/* 开启喇叭检测 */
 		case BLE_CMD_TYPE_DETECTED_NOISE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_NOISE;
+			/* 开启定时器 */
+			LL_TIM_SetCounter(TIM7, 0);
+			LL_TIM_EnableCounter(TIM7);
 			OLED_Clear();
 			OLED_ShowString(0, 2, "value = ", 8);
 			OLED_ShowString(104, 2, "dB", 2);
@@ -197,8 +204,9 @@ void BLE_Process(void)
 		/* 开启货叉下降速度检测 */
 		case BLE_CMD_TYPE_DETECTED_DOWN_VELOCITY:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_DOWN_VELOCITY;
-			__HAL_TIM_ENABLE(&htim7);
-			__HAL_TIM_ENABLE_IT(&htim7, TIM_IT_UPDATE);
+			LL_TIM_SetCounter(TIM7, 0);
+			LL_TIM_EnableCounter(TIM7);
+
 			OLED_Clear();
 			OLED_ShowChineseString(0, 0, (char*)ChineseFont_DownVelocityTitle,
 						sizeof(ChineseFont_DownVelocityTitle) / CHINESE_FONT_SIZE);

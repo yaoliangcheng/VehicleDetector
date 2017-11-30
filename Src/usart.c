@@ -360,6 +360,10 @@ void USART2_UserInit(void)
 	LL_DMA_SetMemoryAddress(DMA1, LL_DMA_CHANNEL_6, (uint32_t)Uart2RecvBuffer);
 	LL_DMA_SetPeriphAddress(DMA1, LL_DMA_CHANNEL_6, (uint32_t)&USART2->DR);
 	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_6, sizeof(Uart2RecvBuffer));
+	LL_USART_EnableDMAReq_RX(USART2);
+
+	LL_DMA_SetPeriphAddress(DMA1, LL_DMA_CHANNEL_7, (uint32_t)&USART2->DR);
+	LL_USART_EnableDMAReq_TX(USART2);
 
 	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_6);
 	LL_USART_EnableIT_IDLE(USART2);

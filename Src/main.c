@@ -106,13 +106,14 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC_Init();
-  MX_TIM3_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_TIM7_Init();
+  MX_TIM3_Init();
 
   /* USER CODE BEGIN 2 */
+  LL_TIM_EnableIT_UPDATE(TIM7);
   USART2_UserInit();
 
   ACCELERATE_Init();
@@ -141,15 +142,6 @@ int main(void)
 		  i = 0;
 		  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	  }
-
-//
-//		OLED_ShowString(0,3,"1.3' OLED TEST", 14);
-//		HAL_Delay(1000);
-//		OLED_DrawBMP(0,0,128,8,BMP1);
-//		HAL_Delay(1000);
-//		OLED_DrawBMP(0,0,128,8,BMP2);
-//		HAL_Delay(1000);
-
   }
   /* USER CODE END 3 */
 

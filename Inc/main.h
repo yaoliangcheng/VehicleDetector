@@ -39,6 +39,7 @@
 #ifndef __MAIN_H
 #define __MAIN_H
   /* Includes ------------------------------------------------------------------*/
+#include "stm32l1xx_ll_tim.h"
 #include "stm32l1xx_ll_usart.h"
 #include "stm32l1xx_ll_rcc.h"
 #include "stm32l1xx_ll_bus.h"
