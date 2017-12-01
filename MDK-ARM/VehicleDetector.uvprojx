@@ -335,7 +335,7 @@
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32L151xB,USE_FULL_LL_DRIVER</Define>
               <Undefine />
-              <IncludePath>../Inc;                             ../Drivers/STM32L1xx_HAL_Driver/Inc;                             ../Drivers/STM32L1xx_HAL_Driver/Inc/Legacy;                             ../Drivers/CMSIS/Device/ST/STM32L1xx/Include;                             ../Drivers/CMSIS/Include;                             ..\Hardware\Inc</IncludePath>
+              <IncludePath>../Inc;                              ../Drivers/STM32L1xx_HAL_Driver/Inc;                              ../Drivers/STM32L1xx_HAL_Driver/Inc/Legacy;                              ../Drivers/CMSIS/Device/ST/STM32L1xx/Include;                              ../Drivers/CMSIS/Include;                              ..\Hardware\Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
