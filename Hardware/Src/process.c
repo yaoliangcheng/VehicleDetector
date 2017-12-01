@@ -1,5 +1,7 @@
 #include "process.h"
 #include "ultrasonicwave.h"
+#include "encode.h"
+
 /******************************************************************************/
 PROCESS_ModeEnum PROCESS_Mode = PROCESS_MODE_INVALID;
 ItemValueTypedef     ItemValue;
@@ -37,7 +39,8 @@ void PROCESS(void)
 
 	/* 制动距离检测 */
 	case PROCESS_MODE_DETECTED_BRAKING_DISTANCE:
-		ACCELERATE_Process();
+//		ACCELERATE_Process();
+		ENCODE_Process();
 		break;
 
 	/* 制动踏板力检测 */

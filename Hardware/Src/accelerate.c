@@ -11,7 +11,7 @@ ACCELERATE_SendStrcutTypedef ACCELERATE_SendStrcut;
 extern ItemValueTypedef     ItemValue;
 extern ItemZeroValueTypedef ItemZeroValue;
 extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
-
+extern BLE_SendStructTypedef BLE_SendStruct;
 extern uint16_t huaTimeBase;
 /******************************************************************************/
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
@@ -84,10 +84,12 @@ void ACCELERATE_Process(void)
 		case ACCELERATE_TYPE_ANGLE:
 			switch (PROCESS_Mode)
 			{
+			/* 方向盘转角 */
 			case PROCESS_MODE_DETECTED_STEERING_WHEEL_ANGLE:
 				AccelerateAngleProcess(&ACCELERATE_Recv.buffer[0]);
 				break;
 
+			/* 坡度检测 */
 			case PROCESS_MODE_DETECTED_GRADIENT:
 				AccelerateGradientProcess(&ACCELERATE_Recv.buffer[0]);
 				break;
@@ -270,12 +272,13 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 //#endif
 
 	/* 显示实时位移 */
-	sprintf(value, "%6.1f", ItemValue.brakeDistance);
+
 #if DEVICE_OLED_DISPLAY_ENABLE
+	sprintf(value, "%6.1f", ItemValue.brakeDistance);
 	OLED_ShowString(64, 4, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendBytes(BLE_DATA_TYPE_BRAKING_DISTANCE, value);
+//	BLE_SendBytes(BLE_DATA_TYPE_BRAKING_DISTANCE);
 #endif
 }
 
@@ -334,13 +337,14 @@ static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	/* 零点校准 */
 	ItemValue.steeringWheelAngle -= ItemZeroValue.steeringWheelAngle;
 
-	/* 输出显示 */
-	sprintf(value, "%6.1f", ItemValue.steeringWheelAngle);
 #if DEVICE_OLED_DISPLAY_ENABLE
+	sprintf(value, "%6.1f", ItemValue.steeringWheelAngle);
 	OLED_ShowString(64, 2, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_ANGLE, value);
+	BLE_SendStruct.length = sizeof(ItemValue.steeringWheelAngle);
+	BLE_SendStruct.pack.data = ItemValue.steeringWheelAngle;
+	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_ANGLE);
 #endif
 }
 
@@ -379,7 +383,9 @@ static void AccelerateGradientProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	OLED_ShowString(64, 2, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendBytes(BLE_DATA_TYPE_GRADIENT, value);
+	BLE_SendStruct.length = sizeof(ItemValue.gradient);
+	BLE_SendStruct.pack.data = ItemValue.gradient;
+	BLE_SendBytes(BLE_DATA_TYPE_GRADIENT);
 #endif
 }
 
@@ -445,6 +451,8 @@ static void AccelerateSideSlipProcess(ACCELERATE_RecvTypedef* recv)
 	OLED_ShowString(64, 4, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendBytes(BLE_DATA_TYPE_SIDESLIP_DISTANCE_MAX, value);
+	BLE_SendStruct.length = sizeof(ItemValue.sideSlipOffset);
+	BLE_SendStruct.pack.data = ItemValue.sideSlipOffset;
+	BLE_SendBytes(BLE_DATA_TYPE_SIDESLIP_DISTANCE_MAX);
 #endif
 }

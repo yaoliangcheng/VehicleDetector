@@ -65,9 +65,7 @@ typedef enum
 	BLE_DATA_TYPE_SIDESLIP_DISTANCE_MAX,				/* 最大侧滑量值 */
 
 	/* 下降速度 */
-	BLE_DATA_TYPE_DOWN_DISTANCE = 0x80,					/* 货叉离地距离 */
-	BLE_DATA_TYPE_DOWN_VELOCITY,						/* 实时货叉下降速度 */
-	BLE_DATA_TYPE_DOWN_VELOCITY_MAX,					/* 货叉最大下降速度 */
+	BLE_DATA_TYPE_DOWN_VELOCITY = 0x80,					/* 货叉离地 */
 
 	/* 坡度检测 */
 	BLE_DATA_TYPE_GRADIENT = 0x90,						/* 坡度值 */
@@ -90,7 +88,7 @@ typedef enum
 } BLE_CmdSubtypeEnum;
 
 /******************************************************************************/
-#pragma pack(1)
+
 
 typedef struct
 {
@@ -108,22 +106,38 @@ typedef struct
 	FunctionalState status;				/* 接收状态 */
 } BLE_RecvTypedef;
 
+/******************************************************************************/
+#pragma pack(push)
+#pragma pack(1)						/* 按字节对齐 */
+
+typedef struct
+{
+	uint16_t distance;
+	double   speed;
+} DownVelocity_SendBufferTypedef;
+
+
 typedef struct
 {
 	uint8_t head;						/* 帧头 */
 	uint8_t type;						/* 数据类型 */
 	uint8_t length;						/* 数据长度 */
-	char    data[6];					/* 数据（ASCII） 数据范围-999.9~9999.9*/
+	union
+	{
+		uint8_t buffer[30];				/* 缓存 */
+		double  data;					/* 数据 */
+		DownVelocity_SendBufferTypedef DownVelocity_SendBuffer;
+	} pack;
 	uint8_t verify;						/* 校验和 */
 	uint8_t tail;						/* 帧尾 */
 } BLE_SendStructTypedef;				/* 蓝牙发送结构体 */
 
-#pragma pack()
+#pragma pack(pop)
 
 /******************************************************************************/
 void BLE_Init(void);
 void BLE_UartIdleDeal(void);
 void BLE_Process(void);
-void BLE_SendBytes(BLE_CmdDataTypeEnum type, char* value);
+void BLE_SendBytes(BLE_CmdDataTypeEnum type);
 
 #endif

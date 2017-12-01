@@ -67,25 +67,22 @@ void BLE_UartIdleDeal(void)
 /*******************************************************************************
  * @brief 蓝牙数据透传
  */
-void BLE_SendBytes(BLE_CmdDataTypeEnum type, char* value)
+void BLE_SendBytes(BLE_CmdDataTypeEnum type)
 {
 	/* 蓝牙发送结构体固定值 */
 	BLE_SendStruct.head = BLE_PROTOCOL_HEAD;
-	BLE_SendStruct.length = 6;
 	BLE_SendStruct.tail = BLE_PROTOCOL_TAIL;
 
-	/* 将发送的数据缓存到发送缓存 */
-	memcpy(BLE_SendStruct.data, value, sizeof(BLE_SendStruct.data));
 	/* 数据类型 */
 	BLE_SendStruct.type = type;
-	/* 计算校验和 */
-	BLE_SendStruct.verify = CheckSum(&BLE_SendStruct.type, 7);
+
+	/* 计算校验和,校验长度为数据类型 + 数据长度 + 数据  */
+	BLE_SendStruct.verify = CheckSum(&BLE_SendStruct.type, BLE_SendStruct.length + 2);
+	memcpy(&BLE_SendStruct.pack.buffer[BLE_SendStruct.length], &BLE_SendStruct.verify, 2);
 
 	/* 串口发送 */
 	HAL_UART_Transmit_DMA(&BLE_UART, (uint8_t*)&BLE_SendStruct,
-					sizeof(BLE_SendStructTypedef));
-//	HAL_UART_Transmit(&BLE_UART, (uint8_t*)&BLE_SendStruct,
-//					sizeof(BLE_SendStructTypedef), 1000);
+			BLE_SendStruct.length + 5);
 }
 
 /*******************************************************************************
@@ -144,7 +141,7 @@ void BLE_Process(void)
 			OLED_Clear();
 			OLED_ShowChineseString(0, 0, (char*)ChineseFont_SteeringWheelAngle,
 					sizeof(ChineseFont_SteeringWheelAngle) / CHINESE_FONT_SIZE);
-			OLED_ShowString(0, 2, "value = ", 8);
+			OLED_ShowString(0,   2, "value = ", 8);
 			OLED_ShowString(104, 2, "°", 1);
 			break;
 
@@ -226,11 +223,11 @@ void BLE_Process(void)
 			break;
 
 		/* 开启电池电量检测 */
-//		case BLE_CMD_TYPE_DETECTED_BATTERY_CAPACITY:
-//			ANALOG_ConvertEnable();
-//			PROCESS_Mode = PROCESS_MODE_DETECTED_BATTERY_CAPACITY;
-//			OLED_Clear();
-//			break;
+		case BLE_CMD_TYPE_DETECTED_BATTERY_CAPACITY:
+			ANALOG_ConvertEnable();
+			PROCESS_Mode = PROCESS_MODE_DETECTED_BATTERY_CAPACITY;
+			OLED_Clear();
+			break;
 
 		default:
 			break;

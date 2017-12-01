@@ -52,7 +52,7 @@ void ANALOG_Process(void)
 		OLED_ShowString(64, 2, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-		BLE_SendBytes(BLE_DATA_TYPE_BATTERY_CAPACITY, value);
+		BLE_SendBytes(BLE_DATA_TYPE_BATTERY_CAPACITY);
 #endif
 
 	}

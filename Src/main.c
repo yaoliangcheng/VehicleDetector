@@ -142,7 +142,7 @@ int main(void)
 	  if (i > 50000)
 	  {
 		  i = 0;
-		  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+//		  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	  }
   }
   /* USER CODE END 3 */

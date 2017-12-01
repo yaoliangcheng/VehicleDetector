@@ -122,7 +122,7 @@ void MX_TIM7_Init(void)
 
   TIM_InitStruct.Prescaler = 31999;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 99;
+  TIM_InitStruct.Autoreload = 999;
   LL_TIM_Init(TIM7, &TIM_InitStruct);
 
   LL_TIM_SetTriggerOutput(TIM7, LL_TIM_TRGO_RESET);

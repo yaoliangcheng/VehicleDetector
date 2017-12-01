@@ -8,7 +8,10 @@ FunctionalState Encode_processEnable;		/* 编码器Process使能 */
 FunctionalState Encode_initEnable;
 
 extern double BrakeDistance_speed;
+extern double BrakeDistance_oldSpeed;
 extern double BrakeDistance_distance;
+extern double BrakeDistance_brakeDistance;
+
 
 /*******************************************************************************
  *
@@ -29,17 +32,20 @@ void ENCODE_Process(void)
 			Encode_plusCnt += ENCODE_PERIOD_PLUS_CNT - Encode_plusCntOld;
 		}
 
+		/* 缓存旧值 */
 		Encode_plusCntOld = Encode_plusCnt;
 
 		/* 计算速度 */
 		BrakeDistance_speed = ((ENCODE_WHEEL_PERIMETER / ENCODE_PERIOD_PLUS_CNT)
-								* Encode_plusCnt) / 0.1;
+								* Encode_plusCnt);
 		/* 计算距离 */
 		BrakeDistance_distance = (Encode_periodCnt * ENCODE_WHEEL_PERIMETER)
 				+ ((ENCODE_WHEEL_PERIMETER / ENCODE_PERIOD_PLUS_CNT)
 				* Encode_plusCnt);
 
 		/* 开始制动 */
+		/* todo 制动产生的条件 */
+		/* 检测踏板力？检测加速度？判断速度？ */
 		if (BrakeDistance_speed < BrakeDistance_oldSpeed)
 		{
 			if (Encode_initEnable == DISABLE)

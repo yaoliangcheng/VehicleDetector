@@ -8,6 +8,7 @@ PRESSURE_ParamTypedef PRESSURE_Param;
 extern ItemValueTypedef     ItemValue;
 extern ItemZeroValueTypedef ItemZeroValue;
 extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
+extern BLE_SendStructTypedef BLE_SendStruct;
 
 /******************************************************************************/
 static uint32_t HX711_ReadValue(void);
@@ -74,7 +75,8 @@ void PRESSURE_GetPedalForce(void)
 	OLED_ShowString(56, 2, value, sizeof(value));
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendBytes(BLE_DATA_TYPE_PEDAL_FORCE, value);
+
+	BLE_SendBytes(BLE_DATA_TYPE_PEDAL_FORCE);
 #endif
 
 	HAL_Delay(10);
@@ -107,12 +109,15 @@ void PRESSURE_GetSteeringWheelForce(void)
 	/* ÁãµãÐ£×¼ */
 	ItemValue.steeringWheelForce -= ItemZeroValue.steeringWheelForce;
 
-	sprintf(value, "%6.1f", ItemValue.steeringWheelForce);
+
 #if DEVICE_OLED_DISPLAY_ENABLE
+	sprintf(value, "%6.1f", ItemValue.steeringWheelForce);
 	OLED_ShowString(56, 2, value, sizeof(value));
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_FORCE, value);
+	BLE_SendStruct.length = sizeof(ItemValue.steeringWheelForce);
+	BLE_SendStruct.pack.data = ItemValue.steeringWheelForce;
+	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_FORCE);
 #endif
 
 	HAL_Delay(10);
@@ -149,7 +154,7 @@ void PRESSURE_GetHandBrakeForce(void)
 	OLED_ShowString(56, 2, value, sizeof(value));
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendBytes(BLE_DATA_TYPE_HAND_BRAKE_FORCE, value);
+	BLE_SendBytes(BLE_DATA_TYPE_HAND_BRAKE_FORCE);
 #endif
 
 	HAL_Delay(10);
