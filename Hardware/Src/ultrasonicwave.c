@@ -32,6 +32,7 @@ void ULTRASONICWAVE_Process(void)
 {
 	char value[7];
 	uint8_t size;
+	uint8_t i, j;
 
 	if (ENABLE == ULTRASONICWAVE_Recv.status)
 	{
@@ -49,31 +50,36 @@ void ULTRASONICWAVE_Process(void)
 			UltrasonicWave_BufferIndex = 0;
 
 			/* todo 排序 */
+			/* 冒泡法排序 */
+			for (i = 0; j < 10; j++)
+			{
+				for (j = i + 1; j < 10; j++)
+				{
+					if (UltrasonicWave_DataBuffer[j] > UltrasonicWave_DataBuffer[i])
+					{
+						value = UltrasonicWave_DataBuffer[i];
+						UltrasonicWave_DataBuffer[i] = UltrasonicWave_DataBuffer[j];
+						UltrasonicWave_DataBuffer[j] = value;
+					}
+				}
+			}
+			/* 取中位值 */
+			DownVelocity_Distance = UltrasonicWave_DataBuffer[6];
 
+			/* 叉车下降，距离减小，对于变大的数据默认为干扰 */
+			if (DownVelocity_Distance < DownVelocity_DistanceOld)
+			{
+				/* 获取当前速度 */
+				DownVelocity_Speed = (DownVelocity_DistanceOld - DownVelocity_Distance)
+						/ ULTRASONICWAVE_TIME_PERIOD;
+			}
+			else
+			{
+				DownVelocity_Speed = 0;
+			}
 
-
-		}
-
-		/* 获取离地距离 */
-		DownVelocity_Distance = (ULTRASONICWAVE_Recv.buffer.dataH << 8)
-				| (ULTRASONICWAVE_Recv.buffer.dataL);
-
-		/* 叉车下降，距离减小，对于变大的数据默认为干扰 */
-		if (DownVelocity_Distance < DownVelocity_DistanceOld)
-		{
-			/* 获取当前速度 */
-//			DownVelocity_Speed = (double)(DownVelocity_DistanceOld - DownVelocity_Distance)
-//						/ ULTRASONICWAVE_TIME_PERIOD;
-			DownVelocity_Speed = (DownVelocity_DistanceOld - DownVelocity_Distance)
-					/ ULTRASONICWAVE_TIME_PERIOD;
-		}
-		else
-		{
-			DownVelocity_Speed = 0;
-		}
-
-		/* 缓存当前值 */
-		DownVelocity_DistanceOld = DownVelocity_Distance;
+			/* 缓存当前值 */
+			DownVelocity_DistanceOld = DownVelocity_Distance;
 
 #if DEVICE_OLED_DISPLAY_ENABLE
 	size = sprintf(value, "%4d", DownVelocity_Distance);
@@ -87,5 +93,6 @@ void ULTRASONICWAVE_Process(void)
 	BLE_SendStruct.pack.DownVelocity_SendBuffer.speed = DownVelocity_Speed;
 	BLE_SendBytes(BLE_DATA_TYPE_DOWN_VELOCITY);
 #endif
+		}
 	}
 }

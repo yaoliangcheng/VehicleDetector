@@ -20,6 +20,11 @@ static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateGradientProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateSideSlipProcess(ACCELERATE_RecvTypedef* recv);
 
+
+extern double SteeringWheel_Angle;
+
+static float GetAngleValue(int16_t data);
+
 /*******************************************************************************
  * @brief 加速度模块初始化
  */
@@ -86,7 +91,7 @@ void ACCELERATE_Process(void)
 			{
 			/* 方向盘转角 */
 			case PROCESS_MODE_DETECTED_STEERING_WHEEL_FORCE_AND_ANGLE:
-				AccelerateAngleProcess(&ACCELERATE_Recv.buffer[0]);
+				SteeringWheel_Angle = GetAngleValue(ACCELERATE_Recv.buffer[0].data3);
 				break;
 
 			/* 坡度检测 */

@@ -22,19 +22,27 @@ double BrakeDistance_oldSpeed;					/* 制动检测-旧速度 */
 double BrakeDistance_initSpeed;					/* 初始速度 */
 double BrakeDistance_distance;					/* 制动检测-距离 */
 
-/* 货叉下降速度检测 */
-uint16_t DownVelocity_Distance;
-uint16_t DownVelocity_DistanceOld;
-double   DownVelocity_Speed;
-
-
-
 uint16_t Encode_plusCnt = 0;				/* 编码器脉冲数 */
 uint16_t Encode_plusCntOld = 0;				/* 编码器旧脉冲数 */
 uint16_t Encode_periodCntTotal = 0;			/* 总周期数 */
 uint16_t Encode_periodCnt = 0;				/* 周期数 */
 FunctionalState Encode_processEnable;		/* 编码器Process使能 */
 FunctionalState Encode_initEnable;
+
+/* 货叉下降速度检测 */
+uint16_t DownVelocity_Distance;
+uint16_t DownVelocity_DistanceOld;
+double   DownVelocity_Speed;
+
+/* 方向盘 */
+FunctionalState SteeringWheel_SetZeroEnable;
+double SteeringWheel_Force;
+double SteeringWheel_ForceZeroValue = STEERING_WHEEL_FORCE_ZERO_VALUE;
+double SteeringWheel_ForceFullValue = STEERING_WHEEL_FORCE_FULL_VALUE;
+double SteeringWheel_ForceFullValue_N = STEERING_WHEEL_FORCE_FULL_VALUE_N;
+double SteeringWheel_Angle;
+double SteeringWheel_AngleZeroValue = 0;
+
 
 extern BLE_SendStructTypedef BLE_SendStruct;
 
@@ -167,38 +175,43 @@ void SteeringWheel_ForceAndAngleProcess(void)
 
 	/* 获取24bitAD值 */
 	data = HX711_ReadValue();
-	/* 获取的AD值减去中间值 */
-	data -= PRESSURE_RANGE_MEDIAN_VALUE;
-
-	/* 转换转向力值 */
-//	ItemValue.steeringWheelForce =
-//			(data / (double)PRESSURE_Param.steeringWheelForceRange)
-//			* PRESSURE_RANGE_STEERING_WHEEL_FORCE * 5.44;
-	ItemValue.steeringWheelForce =
-			(data / (double)1)
-			* PRESSURE_RANGE_STEERING_WHEEL_FORCE * 5.44;
-
-	if (ItemValueSetZeroEnable.steeringWheelForce == ENABLE)
-	{
-		ItemValueSetZeroEnable.steeringWheelForce = DISABLE;
-		ItemZeroValue.steeringWheelForce = ItemValue.steeringWheelForce;
-	}
-
-	/* 零点校准 */
-	ItemValue.steeringWheelForce -= ItemZeroValue.steeringWheelForce;
-
 	/* 获取方向盘角度 */
 	ACCELERATE_Process();
+	if (SteeringWheel_SetZeroEnable == ENABLE)
+	{
+		SteeringWheel_SetZeroEnable = DISABLE;
+		SteeringWheel_ForceZeroValue = data;
+		SteeringWheel_AngleZeroValue = SteeringWheel_Angle;
+	}
+
+	data -= SteeringWheel_ForceZeroValue;
+	/* 转换转向力值 */
+	if (data > 0)
+	{
+		SteeringWheel_Force = (data / (SteeringWheel_ForceFullValue - SteeringWheel_ForceZeroValue))
+				* PRESSURE_RANGE_STEERING_WHEEL_FORCE;
+	}
+	else
+	{
+		SteeringWheel_Force = (data / (SteeringWheel_ForceZeroValue - SteeringWheel_ForceFullValue_N))
+				* PRESSURE_RANGE_STEERING_WHEEL_FORCE;
+	}
+
+	/* 角度值 */
+	SteeringWheel_Angle -= SteeringWheel_AngleZeroValue;
+
 
 #if DEVICE_OLED_DISPLAY_ENABLE
-	sprintf(value, "%6.1f", ItemValue.steeringWheelForce);
+	sprintf(value, "%6.1f", SteeringWheel_Force);
 	OLED_ShowString(56, 2, value, sizeof(value));
+	sprintf(value, "%6.1f", SteeringWheel_Angle);
+	OLED_ShowString(56, 4, value, sizeof(value));
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendStruct.length = sizeof(ItemValue.steeringWheelForce) +
-			sizeof(ItemValue.steeringWheelAngle);
-	BLE_SendStruct.pack.SteeringWheel_ForceAndAngle.force = ItemValue.steeringWheelForce;
-	BLE_SendStruct.pack.SteeringWheel_ForceAndAngle.angle = ItemValue.steeringWheelAngle;
+	BLE_SendStruct.length = sizeof(SteeringWheel_Force) +
+			sizeof(SteeringWheel_Angle);
+	BLE_SendStruct.pack.SteeringWheel_ForceAndAngle.force = SteeringWheel_Force;
+	BLE_SendStruct.pack.SteeringWheel_ForceAndAngle.angle = SteeringWheel_Angle;
 	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHELL_FORCE_AND_ANGLE);
 #endif
 
@@ -212,7 +225,7 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 {
 	uint16_t plusCnt = 0;
 	uint32_t data = 0;
-	uint8_t  value[10];
+	char     value[10];
 	uint8_t  size = 0;
 
 	if (Encode_processEnable == ENABLE)
