@@ -75,7 +75,7 @@ void SystemClock_Config(void);
 
 /* USER CODE BEGIN 0 */
 extern const char ChineseFont_Welcome[CHINESE_FONT_SIZE * 13];
-uint32_t value;
+//uint32_t value;
 /* USER CODE END 0 */
 
 int main(void)
@@ -142,7 +142,7 @@ int main(void)
 	  if (i > 50000)
 	  {
 		  i = 0;
-//		  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+		  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	  }
   }
   /* USER CODE END 3 */

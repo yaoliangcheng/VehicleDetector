@@ -8,7 +8,7 @@
 
 /******************************************************************************/
 #define ENCODE_PERIOD_PLUS_CNT				(500)			/* 运动周期脉冲数 */
-#define ENCODE_WHEEL_PERIMETER				(float)(1.5)	/* 轮子周长 */
+#define ENCODE_WHEEL_PERIMETER				(300)			/* 轮子周长 */
 
 
 #endif

@@ -11,14 +11,17 @@
 #include "analog.h"
 
 /******************************************************************************/
+#define GET_VALUE_TIME_PERIOD			(double)(0.5)
+#define PEDAL_FORCE_ZERO_VALUE			(0X7FFFFF)
+#define PEDAL_FORCE_FULL_VALUE			(0XFFFFFF)
+
+/******************************************************************************/
 typedef enum
 {
 	PROCESS_MODE_INVALID,							/* 无效模式 */
-	PROCESS_MODE_DETECTED_STEERING_WHEEL_FORCE,		/* 方向盘转向力检测 */
-	PROCESS_MODE_DETECTED_STEERING_WHEEL_ANGLE,		/* 方向盘转角检测 */
-	PROCESS_MODE_DETECTED_BRAKING_DISTANCE,			/* 制动距离检测 */
-	PROCESS_MODE_DETECTED_PEDAL_FORCE,				/* 制动踏板力检测 */
-	PROCESS_MODE_DETECTED_HAND_BRAKE_FORCE,			/* 手刹制动力检测 */
+	PROCESS_MODE_DETECTED_STEERING_WHEEL_FORCE_AND_ANGLE,/* 方向盘转向力检测 */
+	PROCESS_MODE_DETECTED_PEDAL_FORCE_BRAKING_DISTANCE = 0x03,	/* 踏板力和制动距离检测 */
+	PROCESS_MODE_DETECTED_HAND_BRAKE_FORCE = 0x05,			/* 手刹制动力检测 */
 	PROCESS_MODE_DETECTED_NOISE,					/* 喇叭检测 */
 	PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE,		/* 侧滑量检测 */
 	PROCESS_MODE_DETECTED_DOWN_VELOCITY,			/* 货叉下降速度检测 */

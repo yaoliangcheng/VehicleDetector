@@ -62,9 +62,9 @@ void ACCELERATE_Process(void)
 		case ACCELERATE_TYPE_ACCELERATE_SPEED:
 			switch (PROCESS_Mode)
 			{
-			case PROCESS_MODE_DETECTED_BRAKING_DISTANCE:
-				AccelerateSpeedProcess(&ACCELERATE_Recv.buffer[0]);
-				break;
+//			case PROCESS_MODE_DETECTED_BRAKING_DISTANCE:
+//				AccelerateSpeedProcess(&ACCELERATE_Recv.buffer[0]);
+//				break;
 
 			case PROCESS_MODE_DETECTED_DOWN_VELOCITY:
 //				AccelerateDownSpeedProcess(&ACCELERATE_Recv.buffer[0]);
@@ -85,7 +85,7 @@ void ACCELERATE_Process(void)
 			switch (PROCESS_Mode)
 			{
 			/* 方向盘转角 */
-			case PROCESS_MODE_DETECTED_STEERING_WHEEL_ANGLE:
+			case PROCESS_MODE_DETECTED_STEERING_WHEEL_FORCE_AND_ANGLE:
 				AccelerateAngleProcess(&ACCELERATE_Recv.buffer[0]);
 				break;
 
@@ -337,15 +337,15 @@ static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	/* 零点校准 */
 	ItemValue.steeringWheelAngle -= ItemZeroValue.steeringWheelAngle;
 
-#if DEVICE_OLED_DISPLAY_ENABLE
-	sprintf(value, "%6.1f", ItemValue.steeringWheelAngle);
-	OLED_ShowString(64, 2, value, 6);
-#endif
-#if DEVICE_BLE_SEND_ENABLE
-	BLE_SendStruct.length = sizeof(ItemValue.steeringWheelAngle);
-	BLE_SendStruct.pack.data = ItemValue.steeringWheelAngle;
-	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_ANGLE);
-#endif
+//#if DEVICE_OLED_DISPLAY_ENABLE
+//	sprintf(value, "%6.1f", ItemValue.steeringWheelAngle);
+//	OLED_ShowString(64, 2, value, 6);
+//#endif
+//#if DEVICE_BLE_SEND_ENABLE
+//	BLE_SendStruct.length = sizeof(ItemValue.steeringWheelAngle);
+//	BLE_SendStruct.pack.data = ItemValue.steeringWheelAngle;
+////	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_ANGLE);
+//#endif
 }
 
 /*******************************************************************************

@@ -50,6 +50,7 @@ extern ULTRASONICWAVE_RecvTypedef ULTRASONICWAVE_Recv;
 extern uint16_t Encode_plusCnt;
 extern FunctionalState Encode_processEnable;
 extern uint16_t Encode_periodCnt;
+extern uint16_t Encode_periodCntTotal;			/* 总周期数 */
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -312,6 +313,7 @@ void TIM3_IRQHandler(void)
 	{
 		LL_TIM_ClearFlag_UPDATE(TIM3);
 		Encode_periodCnt++;
+		Encode_periodCntTotal++;
 	}
 
   /* USER CODE END TIM3_IRQn 0 */
@@ -411,7 +413,7 @@ void TIM7_IRQHandler(void)
 			ULTRASONICWAVE_Require();
 			break;
 
-		case PROCESS_MODE_DETECTED_BRAKING_DISTANCE:
+		case PROCESS_MODE_DETECTED_PEDAL_FORCE_BRAKING_DISTANCE:
 			/* 获取TIM值 */
 			Encode_plusCnt = LL_TIM_GetCounter(TIM3);
 			/* Enable Process */

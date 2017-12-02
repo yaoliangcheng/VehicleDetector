@@ -42,5 +42,5 @@ void PRESSURE_Init(void);
 void PRESSURE_GetPedalForce(void);
 void PRESSURE_GetSteeringWheelForce(void);
 void PRESSURE_GetHandBrakeForce(void);
-
+uint32_t HX711_ReadValue(void);
 #endif

@@ -8,7 +8,7 @@
 
 /******************************************************************************/
 #define ULTRASONICWAVE_HEAD					(0xFF)
-#define ULTRASONICWAVE_TIME_PERIOD			(double)(0.1)	/* 超声波获取周期，单位s */
+#define ULTRASONICWAVE_TIME_PERIOD			(double)(0.5)	/* 超声波获取周期，单位s */
 
 #define ULTRASONICWAVE_UART					(huart2)
 #define ULTRASONICWAVE_UART_DMA_RX_GL_FLAG	(DMA_FLAG_GL6)

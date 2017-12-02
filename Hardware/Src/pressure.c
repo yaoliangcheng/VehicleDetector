@@ -11,7 +11,7 @@ extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 extern BLE_SendStructTypedef BLE_SendStruct;
 
 /******************************************************************************/
-static uint32_t HX711_ReadValue(void);
+
 
 /*******************************************************************************
  * @brief 压力传感器参数初始化
@@ -44,7 +44,6 @@ void PRESSURE_Init(void)
 void PRESSURE_GetPedalForce(void)
 {
 	uint32_t data = 0;
-	char value[7];
 
 	/* 获取24bitAD值 */
 	data = HX711_ReadValue();
@@ -55,11 +54,13 @@ void PRESSURE_GetPedalForce(void)
 	}
 	else
 	{
-		data = 0;
+//		data = 0;
 	}
 	/* 转换踏板力值 */
+//	ItemValue.pedalForce = (data / (double)PRESSURE_Param.pedalValueRange)
+//			* PRESSURE_RANGE_PEDAL_FORCE * 1.916;
 	ItemValue.pedalForce = (data / (double)PRESSURE_Param.pedalValueRange)
-			* PRESSURE_RANGE_PEDAL_FORCE * 1.916;
+			* PRESSURE_RANGE_PEDAL_FORCE;
 	/* 零点校准使能 */
 	if (ItemValueSetZeroEnable.pedalForce == ENABLE)
 	{
@@ -69,17 +70,6 @@ void PRESSURE_GetPedalForce(void)
 
 	/* 零点校准 */
 	ItemValue.pedalForce -= ItemZeroValue.pedalForce;
-
-	sprintf(value, "%6.1f", ItemValue.pedalForce);
-#if DEVICE_OLED_DISPLAY_ENABLE
-	OLED_ShowString(56, 2, value, sizeof(value));
-#endif
-#if DEVICE_BLE_SEND_ENABLE
-
-	BLE_SendBytes(BLE_DATA_TYPE_PEDAL_FORCE);
-#endif
-
-	HAL_Delay(10);
 }
 
 /*******************************************************************************
@@ -117,10 +107,10 @@ void PRESSURE_GetSteeringWheelForce(void)
 #if DEVICE_BLE_SEND_ENABLE
 	BLE_SendStruct.length = sizeof(ItemValue.steeringWheelForce);
 	BLE_SendStruct.pack.data = ItemValue.steeringWheelForce;
-	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_FORCE);
+//	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_FORCE);
 #endif
 
-	HAL_Delay(10);
+	HAL_Delay(200);
 }
 
 /*******************************************************************************
@@ -157,7 +147,7 @@ void PRESSURE_GetHandBrakeForce(void)
 	BLE_SendBytes(BLE_DATA_TYPE_HAND_BRAKE_FORCE);
 #endif
 
-	HAL_Delay(10);
+	HAL_Delay(200);
 }
 
 /*******************************************************************************
@@ -204,7 +194,7 @@ static uint32_t ReadValue(void)
  * 			注意：Vavdd的值要 < 模块的供电电压 - 100mV（最少）
  *
  */
-static uint32_t HX711_ReadValue(void)
+uint32_t HX711_ReadValue(void)
 {
 	uint32_t sum = 0;
 	

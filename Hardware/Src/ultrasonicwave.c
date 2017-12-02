@@ -6,6 +6,9 @@
 /******************************************************************************/
 ULTRASONICWAVE_RecvTypedef ULTRASONICWAVE_Recv;
 
+uint8_t  UltrasonicWave_BufferIndex = 0;
+uint16_t UltrasonicWave_DataBuffer[10];
+
 /* 货叉下降速度检测 */
 extern uint16_t DownVelocity_Distance;
 extern uint16_t DownVelocity_DistanceOld;
@@ -37,6 +40,20 @@ void ULTRASONICWAVE_Process(void)
 		if (ULTRASONICWAVE_Recv.buffer.head != ULTRASONICWAVE_HEAD)
 			return;
 
+		UltrasonicWave_DataBuffer[UltrasonicWave_BufferIndex] =
+				(ULTRASONICWAVE_Recv.buffer.dataH << 8) | ULTRASONICWAVE_Recv.buffer.dataL;
+		UltrasonicWave_BufferIndex++;
+
+		if (UltrasonicWave_BufferIndex >= 10)
+		{
+			UltrasonicWave_BufferIndex = 0;
+
+			/* todo 排序 */
+
+
+
+		}
+
 		/* 获取离地距离 */
 		DownVelocity_Distance = (ULTRASONICWAVE_Recv.buffer.dataH << 8)
 				| (ULTRASONICWAVE_Recv.buffer.dataL);
@@ -47,7 +64,8 @@ void ULTRASONICWAVE_Process(void)
 			/* 获取当前速度 */
 //			DownVelocity_Speed = (double)(DownVelocity_DistanceOld - DownVelocity_Distance)
 //						/ ULTRASONICWAVE_TIME_PERIOD;
-			DownVelocity_Speed = DownVelocity_DistanceOld - DownVelocity_Distance;
+			DownVelocity_Speed = (DownVelocity_DistanceOld - DownVelocity_Distance)
+					/ ULTRASONICWAVE_TIME_PERIOD;
 		}
 		else
 		{

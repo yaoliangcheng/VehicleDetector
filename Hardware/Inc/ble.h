@@ -24,33 +24,19 @@ typedef enum
 	BLE_CMD_TYPE_CLEAR_SENSOR_CACHE,					/* 清除传感器缓存 */
 	BLE_CMD_TYPE_SWITCH_OFF,							/* 断开蓝牙 */
 	BLE_CMD_TYPE_STOP_DETECTED,							/* 停止检测 */
-	BLE_CMD_TYPE_DETECTED_STEERING_WHEEL_FORCE,			/* 开启方向盘转向力检测 */
-	BLE_CMD_TYPE_DETECTED_STEERING_WHEEL_ANGLE,			/* 开启方向盘转角检测 */
-	BLE_CMD_TYPE_DETECTED_BRAKING_DISTANCE,				/* 开启制动距离检测 */
-	BLE_CMD_TYPE_DETECTED_PEDAL_FORCE,					/* 开启制动踏板力检测 */
-	BLE_CMD_TYPE_DETECTED_HAND_BRAKE_FORCE,				/* 开启手刹制动力检测 */
+	BLE_CMD_TYPE_DETECTED_STEERING_WHEEL_FORCE_AND_ANGLE,/* 开启方向盘转向力和角度检测 */
+	BLE_CMD_TYPE_DETECTED_PEDAL_FORCE_AND_BRAKING_DISTANCE = 0X06,/* 开启踏板力和制动距离检测 */
+	BLE_CMD_TYPE_DETECTED_HAND_BRAKE_FORCE = 0X08,				/* 开启手刹制动力检测 */
 	BLE_CMD_TYPE_DETECTED_NOISE,						/* 开启喇叭检测 */
 	BLE_CMD_TYPE_DETECTED_SIDESLIP_DISTANCE,			/* 开启侧滑量检测 */
 	BLE_CMD_TYPE_DETECTED_DOWN_VELOCITY,				/* 开启货叉下降速度检测 */
 	BLE_CMD_TYPE_DETECTED_GRADIENT,						/* 坡度检测 */
 	BLE_CMD_TYPE_DETECTED_BATTERY_CAPACITY,				/* 开启电池电量检测 */
-	
-	/* 方向盘转向力 */
-	BLE_DATA_TYPE_STEERING_WHEEL_FORCE = 0x10,			/* 实时转向力值 */
-	BLE_DATA_TYPE_STEERING_WHEEL_FORCE_MAX,				/* 最大转向力值 */
 
-	/* 方向盘转角 */
-	BLE_DATA_TYPE_STEERING_WHEEL_ANGLE = 0x20,			/* 实时转向角度 */
-	BLE_DATA_TYPE_STEERING_WHEEL_ANGLE_MAX,				/* 最大转向角度 */
+	BLE_DATA_TYPE_STEERING_WHELL_FORCE_AND_ANGLE = 0x10,		/* 方向盘转向力和角度检测 */
 
 	/* 制动距离 */
-	BLE_DATA_TYPE_BRAKING_INITIAL_VELOCITY = 0x30,		/* 初速度值 */
-	BLE_DATA_TYPE_BRAKING_ACCELERATE_AVERAGE,			/* 平均减速度值 */
-	BLE_DATA_TYPE_BRAKING_DISTANCE,						/* 制动距离 */
-
-	/* 踏板力 */
-	BLE_DATA_TYPE_PEDAL_FORCE = 0x40,					/* 实时踏板力值 */
-	BLE_DATA_TYPE_PEDAL_FORCE_MAX,						/* 最大踏板力值 */
+	BLE_DATA_TYPE_PEDAL_FORCE_AND_BRAKING_DISTANCE = 0x30,		/* 开启踏板力和制动距离检测 */
 
 	/* 手刹力 */
 	BLE_DATA_TYPE_HAND_BRAKE_FORCE = 0x50,				/* 实时手刹力值 */
@@ -116,6 +102,20 @@ typedef struct
 	double   speed;
 } DownVelocity_SendBufferTypedef;
 
+typedef struct
+{
+	double force;
+	double angle;
+} SteeringWheel_ForceAndAngleTypedef;
+
+typedef struct
+{
+	double pedalForce;
+	double initSpeed;
+	double speed;
+	double distance;
+} PedalForce_BrakeDistanceTypedef;
+
 
 typedef struct
 {
@@ -124,9 +124,11 @@ typedef struct
 	uint8_t length;						/* 数据长度 */
 	union
 	{
-		uint8_t buffer[30];				/* 缓存 */
+		uint8_t buffer[50];				/* 缓存 */
 		double  data;					/* 数据 */
 		DownVelocity_SendBufferTypedef DownVelocity_SendBuffer;
+		SteeringWheel_ForceAndAngleTypedef SteeringWheel_ForceAndAngle;
+		PedalForce_BrakeDistanceTypedef PedalForce_BrakeDistance;
 	} pack;
 	uint8_t verify;						/* 校验和 */
 	uint8_t tail;						/* 帧尾 */
