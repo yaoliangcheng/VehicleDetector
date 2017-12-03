@@ -51,6 +51,7 @@ extern uint16_t Encode_plusCnt;
 extern FunctionalState Encode_processEnable;
 extern uint16_t Encode_periodCnt;
 extern uint16_t Encode_periodCntTotal;			/* 总周期数 */
+extern uint32_t SideSlip_plusCnt;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -314,6 +315,7 @@ void TIM3_IRQHandler(void)
 		LL_TIM_ClearFlag_UPDATE(TIM3);
 		Encode_periodCnt++;
 		Encode_periodCntTotal++;
+		SideSlip_plusCnt++;
 	}
 
   /* USER CODE END TIM3_IRQn 0 */

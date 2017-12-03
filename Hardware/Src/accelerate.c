@@ -14,6 +14,8 @@ extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 extern BLE_SendStructTypedef BLE_SendStruct;
 extern uint16_t huaTimeBase;
 
+extern double   SideSlip_angle;
+
 /* ÆÂ¶È¼ì²â */
 extern FunctionalState Gradient_SetZeroEnable;
 extern float  Gradient_Value;
@@ -105,9 +107,10 @@ void ACCELERATE_Process(void)
 				AccelerateGradientProcess(&ACCELERATE_Recv.buffer[0]);
 				break;
 
-//			case PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE:
+			case PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE:
 //				AccelerateSideSlipDistanceProcess(&ACCELERATE_Recv);
-//				break;
+				SideSlip_angle = GetAngleValue(ACCELERATE_Recv.buffer[0].data3);
+				break;
 
 			default:
 				break;

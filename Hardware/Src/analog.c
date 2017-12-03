@@ -7,7 +7,8 @@
 static uint16_t convertValueBuffer[ANALOG_SAMPLE_NUMB];
 static FunctionalState convertFinished = DISABLE;
 
-extern ItemValueTypedef     ItemValue;
+extern uint8_t BatteryVoltage_Value;
+extern BLE_SendStructTypedef BLE_SendStruct;
 
 /******************************************************************************/
 static uint16_t GetAverageValue(void);
@@ -45,13 +46,15 @@ void ANALOG_Process(void)
 		/* 获取模拟量的值 */
 		data = GetAverageValue();
 		/* 获取电池电量值 */
-		ItemValue.batteryCapacity = GetBatVoltage(data);
+		BatteryVoltage_Value = GetBatVoltage(data);
 
-		sprintf(value, "%6d", ItemValue.batteryCapacity);
 #if DEVICE_OLED_DISPLAY_ENABLE
+		sprintf(value, "%6d", BatteryVoltage_Value);
 		OLED_ShowString(64, 2, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
+		BLE_SendStruct.length = sizeof(BatteryVoltage_Value);
+		BLE_SendStruct.pack.data = BatteryVoltage_Value;
 		BLE_SendBytes(BLE_DATA_TYPE_BATTERY_CAPACITY);
 #endif
 

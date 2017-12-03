@@ -8,8 +8,10 @@ BLE_RecvTypedef BLE_Recv;
 uint8_t BLE_sendBuffer[BLE_UART_RX_BYTE_MAX];
 BLE_SendStructTypedef BLE_SendStruct;
 
-extern ItemZeroValueTypedef ItemZeroValue;
-extern ItemValueTypedef     ItemValue;
+
+extern double   SideSlip_distance;
+extern uint32_t SideSlip_plusCnt;
+extern double   SideSlip_angle;
 
 extern const char ChineseFont_SteeringWheelForce[CHINESE_FONT_SIZE * 6];
 extern const char ChineseFont_CurrentValue[CHINESE_FONT_SIZE * 3];
@@ -123,28 +125,6 @@ void BLE_Process(void)
 			ACCELERATE_SetBackInfo(0x00, 0x00);
 			break;
 
-//		/* 开启方向盘转向力检测 */
-//		case BLE_CMD_TYPE_DETECTED_STEERING_WHEEL_FORCE:
-//			PROCESS_Mode = PROCESS_MODE_DETECTED_STEERING_WHEEL_FORCE;
-//			OLED_Clear();
-//			OLED_ShowChineseString(0, 0, (char*)ChineseFont_SteeringWheelForce,
-//					sizeof(ChineseFont_SteeringWheelForce) / CHINESE_FONT_SIZE);
-//			OLED_ShowString(0, 2, "value = ", 8);
-//			OLED_ShowString(104, 2, "N", 1);
-//			break;
-//
-//		/* 开启方向盘转角检测 */
-//		case BLE_CMD_TYPE_DETECTED_STEERING_WHEEL_ANGLE:
-//			PROCESS_Mode = PROCESS_MODE_DETECTED_STEERING_WHEEL_ANGLE;
-//			/* 设置角度信息回传 */
-//			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ANGLE_MARK, 0x00);
-//			OLED_Clear();
-//			OLED_ShowChineseString(0, 0, (char*)ChineseFont_SteeringWheelAngle,
-//					sizeof(ChineseFont_SteeringWheelAngle) / CHINESE_FONT_SIZE);
-//			OLED_ShowString(0,   2, "value = ", 8);
-//			OLED_ShowString(104, 2, "°", 1);
-//			break;
-
 		case BLE_CMD_TYPE_DETECTED_STEERING_WHEEL_FORCE_AND_ANGLE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_STEERING_WHEEL_FORCE_AND_ANGLE;
 			/* 设置角度信息回传 */
@@ -162,24 +142,10 @@ void BLE_Process(void)
 			LL_TIM_SetCounter(TIM7, 0);
 			LL_TIM_EnableCounter(TIM7);
 
-			/* 设置加速度信息回传 */
-//			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ACCELERATE_SPEED_MARK, 0x00);
 			OLED_Clear();
 			OLED_ShowChineseString(0, 0, (char*)ChineseFont_BrakingDistance,
 					sizeof(ChineseFont_BrakingDistance) / CHINESE_FONT_SIZE);
-			OLED_ShowString(0, 2, "value = ", 8);
-			OLED_ShowString(104, 2, "km/h", 4);
-			OLED_ShowString(0, 4, "distance", 8);
-			OLED_ShowString(104, 4, "m", 1);
 			break;
-
-		/* 开启制动踏板力检测 */
-//		case BLE_CMD_TYPE_DETECTED_PEDAL_FORCE:
-//			PROCESS_Mode = PROCESS_MODE_DETECTED_PEDAL_FORCE;
-//			OLED_Clear();
-//			OLED_ShowString(0, 2, "value = ", 8);
-//			OLED_ShowString(104, 2, "N", 1);
-//			break;
 
 		/* 开启手刹制动力检测 */
 		case BLE_CMD_TYPE_DETECTED_HAND_BRAKE_FORCE:
@@ -204,8 +170,13 @@ void BLE_Process(void)
 		/* 开启侧滑量检测 */
 		case BLE_CMD_TYPE_DETECTED_SIDESLIP_DISTANCE:
 			/* 打开加速度和角度检测 */
-			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ACCELERATE_SPEED_MARK | ACCELERATE_TYPE_ANGLE_MARK, 0x00);
+			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ANGLE_MARK, 0x00);
 			PROCESS_Mode = PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE;
+			LL_TIM_SetCounter(TIM3, 0);
+			LL_TIM_EnableCounter(TIM3);
+			SideSlip_plusCnt  = 0;
+			SideSlip_angle    = 0;
+			SideSlip_distance = 0;
 			OLED_Clear();
 			break;
 

@@ -8,10 +8,8 @@
 /******************************************************************************/
 PROCESS_ModeEnum PROCESS_Mode = PROCESS_MODE_INVALID;
 ItemValueTypedef     ItemValue;
-ItemZeroValueTypedef ItemZeroValue;
 ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
-
-
+ItemZeroValueTypedef ItemZeroValue;
 /* 制动距离检测 */
 FunctionalState BrakeDistance_SetZeroEnable;
 double BrakeDistance_pedalForce;				/* 踏板力 */
@@ -59,12 +57,21 @@ FunctionalState Gradient_SetZeroEnable;
 float  Gradient_Value;
 float  Gradient_ZeroValue;
 
+/* 电池电量 */
+uint8_t BatteryVoltage_Value;
+
+/* 侧滑量检测 */
+FunctionalState SideSlip_SetZeroEnable;
+double   SideSlip_distance;
+uint32_t SideSlip_plusCnt;
+double   SideSlip_angle;
 
 extern BLE_SendStructTypedef BLE_SendStruct;
 
 /******************************************************************************/
 void SteeringWheel_ForceAndAngleProcess(void);
 void PROCESS_PedalForceAndBrakeDistance(void);
+void Process_SideSlipDistance(void);
 
 /*******************************************************************************
  *
@@ -80,18 +87,8 @@ void PROCESS(void)
 
 	/* 踏板力和制动距离检测 */
 	case PROCESS_MODE_DETECTED_PEDAL_FORCE_BRAKING_DISTANCE:
-//		ACCELERATE_Process();
-//		ENCODE_Process();
-		/* 获取踏板力 */
-//		PRESSURE_GetPedalForce();
 		PROCESS_PedalForceAndBrakeDistance();
 		break;
-
-//	/* 制动踏板力检测 */
-//	case PROCESS_MODE_DETECTED_PEDAL_FORCE:
-//		/* 获取踏板力 */
-//		PRESSURE_GetPedalForce();
-//		break;
 
 	/* 手刹制动力检测 */
 	case PROCESS_MODE_DETECTED_HAND_BRAKE_FORCE:
@@ -106,7 +103,7 @@ void PROCESS(void)
 
 	/* 侧滑量检测 */
 	case PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE:
-		ACCELERATE_Process();
+		Process_SideSlipDistance();
 		break;
 
 	/* 货叉下降速度检测 */
@@ -158,15 +155,12 @@ void ZeroCalibration(void)
 		Noisy_SetZeroEnable = ENABLE;
 		break;
 
+	/* 侧滑量检测 */
 	case PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE:
-		ItemValueSetZeroEnable.sideSlip = ENABLE;
+		SideSlip_SetZeroEnable = ENABLE;
 		break;
 
-	case PROCESS_MODE_DETECTED_DOWN_VELOCITY:
-		ItemValueSetZeroEnable.downVelocity = ENABLE;
-		break;
-
-
+	/* 坡度检测 */
 	case PROCESS_MODE_DETECTED_GRADIENT:
 		Gradient_SetZeroEnable = ENABLE;
 		break;
@@ -289,6 +283,7 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 		else
 		{
 			Encode_initEnable = DISABLE;
+			BrakeDistance_initSpeed = 0;
 		}
 #if DEVICE_OLED_DISPLAY_ENABLE
 		size = sprintf(value, "%6.1f", BrakeDistance_pedalForce);
@@ -315,7 +310,38 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 	}
 }
 
+/*******************************************************************************
+ * @brief 侧滑量检测
+ */
+void Process_SideSlipDistance(void)
+{
+	uint16_t plusCnt = 0;
+	uint32_t data = 0;
+	char     value[10];
+	uint8_t  size = 0;
 
+	/* 获取位移 */
+	plusCnt = LL_TIM_GetCounter(TIM3);
+	SideSlip_distance = ((SideSlip_plusCnt * ENCODE_WHEEL_PERIMETER)
+			+ ((ENCODE_WHEEL_PERIMETER / (double)ENCODE_PERIOD_PLUS_CNT)
+			* plusCnt)) / 2;
+	/* 获取角度 */
+	ACCELERATE_Process();
+	/* 计算偏移量 */
+	SideSlip_distance = SideSlip_distance * sin(SideSlip_angle);
+	SideSlip_distance = 123.456;
+#if DEVICE_OLED_DISPLAY_ENABLE
+		size = sprintf(value, "%6.1f", SideSlip_distance);
+		OLED_ShowString(56, 0, value, size);
+#endif
+#if DEVICE_BLE_SEND_ENABLE
+		BLE_SendStruct.length = sizeof(SideSlip_distance);
+		Double2Format(SideSlip_distance, BLE_SendStruct.pack.doubleData);
+		BLE_SendBytes(BLE_DATA_TYPE_SIDESLIP_FORCE);
+#endif
+
+	HAL_Delay(500);
+}
 
 
 

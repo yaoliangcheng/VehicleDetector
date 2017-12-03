@@ -124,7 +124,8 @@ typedef struct
 	union
 	{
 		uint8_t buffer[50];				/* 缓存 */
-		uint8_t  doubleData[3];					/* 数据 */
+		uint8_t doubleData[3];					/* 数据 */
+		uint8_t data;
 		DownVelocity_SendBufferTypedef DownVelocity_SendBuffer;
 		SteeringWheel_ForceAndAngleTypedef SteeringWheel_ForceAndAngle;
 		PedalForce_BrakeDistanceTypedef PedalForce_BrakeDistance;
