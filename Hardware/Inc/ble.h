@@ -99,23 +99,22 @@ typedef struct
 typedef struct
 {
 	uint16_t distance;
-	double   speed;
+	uint8_t  speed[3];
 } DownVelocity_SendBufferTypedef;
 
 typedef struct
 {
-	double force;
-	double angle;
+	uint8_t force[3];
+	uint8_t angle[3];
 } SteeringWheel_ForceAndAngleTypedef;
 
 typedef struct
 {
-	double pedalForce;
-	double initSpeed;
-	double speed;
-	double distance;
+	uint8_t pedalForce[3];
+	uint8_t initSpeed[3];
+	uint8_t speed[3];
+	uint8_t distance[3];
 } PedalForce_BrakeDistanceTypedef;
-
 
 typedef struct
 {
@@ -125,7 +124,7 @@ typedef struct
 	union
 	{
 		uint8_t buffer[50];				/* 缓存 */
-		double  data;					/* 数据 */
+		uint8_t  doubleData[3];					/* 数据 */
 		DownVelocity_SendBufferTypedef DownVelocity_SendBuffer;
 		SteeringWheel_ForceAndAngleTypedef SteeringWheel_ForceAndAngle;
 		PedalForce_BrakeDistanceTypedef PedalForce_BrakeDistance;

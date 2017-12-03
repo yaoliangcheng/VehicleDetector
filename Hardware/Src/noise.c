@@ -1,6 +1,7 @@
 #include "noise.h"
 #include "ble.h"
 #include "oled.h"
+#include "public.h"
 
 /******************************************************************************/
 /* 噪声请求指令 */
@@ -9,11 +10,13 @@ uint8_t NOISE_RequireCmd[8] = \
 		{0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A};
 uint8_t NOISE_RecvBytes[NOISE_UART_RX_BYTE_MAX];
 NOISE_RecvTypedef NOISE_Recv;
-		
-extern ItemValueTypedef     ItemValue;
-extern ItemZeroValueTypedef ItemZeroValue;
-extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 
+extern FunctionalState Noisy_SetZeroEnable;
+extern float  Noisy_Value;
+extern float  Noisy_ZeroValue;
+
+extern BLE_SendStructTypedef BLE_SendStruct;
+		
 /*******************************************************************************
  * @brief 请求噪音数据
  */
@@ -24,6 +27,7 @@ void NOISE_Require(void)
 
 	while (cnt--)
 	{
+		while(!LL_USART_IsActiveFlag_TXE(USART2));
 		LL_USART_TransmitData8(USART2, *pData);
 		pData++;
 	}
@@ -48,53 +52,27 @@ void NOISE_Process(void)
 		{
 			noiseValue = (NOISE_Recv.buffer.dataH << 8) | NOISE_Recv.buffer.dataL;
 			/* 噪音值 = 数据 * 0.1 */
-			ItemValue.noise = ((float)noiseValue * 0.1);
+			Noisy_Value = ((float)noiseValue * 0.1);
 			/* 零点校准使能 */
-			if (ItemValueSetZeroEnable.noise == ENABLE)
+			if (Noisy_SetZeroEnable == ENABLE)
 			{
-				ItemValueSetZeroEnable.noise = DISABLE;
-				ItemZeroValue.noise = ItemValue.noise;
+				Noisy_SetZeroEnable = DISABLE;
+				Noisy_ZeroValue = Noisy_Value;
 			}
 			/* 零点校准 */
-			ItemValue.noise -= ItemZeroValue.noise;
+			Noisy_Value -= Noisy_ZeroValue;
 
-			sprintf(value, "%6.1f", ItemValue.noise);
 #if DEVICE_OLED_DISPLAY_ENABLE
+			sprintf(value, "%6.1f", Noisy_Value);
 			OLED_ShowString(64, 2, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
+			BLE_SendStruct.length = 3;
+			Double2Format((double)Noisy_Value, BLE_SendStruct.pack.doubleData);
 			BLE_SendBytes(BLE_DATA_TYPE_NOISE);
 #endif
 		}
 	}
 }
 
-/*******************************************************************************
- * @brief 噪音串口接收处理
- */
-void NOISE_UartIdleDeal(void)
-{
-//	uint32_t tmp_flag = 0, tmp_it_source = 0;
 
-//	tmp_flag      = __HAL_UART_GET_FLAG(&NOISE_UART, UART_FLAG_IDLE);
-//	tmp_it_source = __HAL_UART_GET_IT_SOURCE(&NOISE_UART, UART_IT_IDLE);
-//	if((tmp_flag != RESET) && (tmp_it_source != RESET))
-//	{
-//		__HAL_DMA_DISABLE(NOISE_UART.hdmarx);
-//		__HAL_DMA_CLEAR_FLAG(NOISE_UART.hdmarx, NOISE_UART_DMA_RX_GL_FLAG);
-
-//		/* Clear Uart IDLE Flag */
-//		__HAL_UART_CLEAR_IDLEFLAG(&NOISE_UART);
-
-//		NOISE_Recv.size = NOISE_UART_RX_BYTE_MAX
-//						- __HAL_DMA_GET_COUNTER(NOISE_UART.hdmarx);
-
-//		memcpy(&NOISE_Recv.buffer, NOISE_RecvBytes, NOISE_Recv.size);
-//		NOISE_Recv.status = ENABLE;
-
-//		memset(NOISE_RecvBytes, 0, NOISE_Recv.size);
-
-//		NOISE_UART.hdmarx->Instance->CNDTR = NOISE_UART.RxXferSize;
-//		__HAL_DMA_ENABLE(NOISE_UART.hdmarx);
-//	}
-}

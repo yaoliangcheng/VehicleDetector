@@ -120,7 +120,7 @@ int main(void)
 
   ACCELERATE_Init();
   BLE_Init();
-  PRESSURE_Init();
+//  PRESSURE_Init();
 
   OLED_Init();
 	OLED_ShowChineseString(0, 2, (char*)ChineseFont_Welcome,
@@ -137,7 +137,7 @@ int main(void)
   /* USER CODE BEGIN 3 */
 	  BLE_Process();
 	  PROCESS();
-	  NOISE_Process();
+//	  NOISE_Process();
 	  i++;
 	  if (i > 50000)
 	  {

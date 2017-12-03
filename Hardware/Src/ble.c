@@ -158,6 +158,7 @@ void BLE_Process(void)
 			LL_TIM_SetCounter(TIM3, 0);
 			LL_TIM_EnableCounter(TIM3);
 			/* 开启定时器 */
+			LL_TIM_SetAutoReload(TIM7, 499);
 			LL_TIM_SetCounter(TIM7, 0);
 			LL_TIM_EnableCounter(TIM7);
 
@@ -191,6 +192,7 @@ void BLE_Process(void)
 		/* 开启喇叭检测 */
 		case BLE_CMD_TYPE_DETECTED_NOISE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_NOISE;
+			LL_TIM_SetAutoReload(TIM7, 499);
 			/* 开启定时器 */
 			LL_TIM_SetCounter(TIM7, 0);
 			LL_TIM_EnableCounter(TIM7);
@@ -210,7 +212,7 @@ void BLE_Process(void)
 		/* 开启货叉下降速度检测 */
 		case BLE_CMD_TYPE_DETECTED_DOWN_VELOCITY:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_DOWN_VELOCITY;
-			LL_TIM_SetAutoReload(TIM7, 49);
+			LL_TIM_SetAutoReload(TIM7, 499);
 			LL_TIM_SetCounter(TIM7, 0);
 			LL_TIM_EnableCounter(TIM7);
 

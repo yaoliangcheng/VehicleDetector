@@ -43,6 +43,22 @@ double SteeringWheel_ForceFullValue_N = STEERING_WHEEL_FORCE_FULL_VALUE_N;
 double SteeringWheel_Angle;
 double SteeringWheel_AngleZeroValue = 0;
 
+/* 手刹力 */
+FunctionalState HandBrake_SetZeroEnable;
+double HandBrake_force;											/* 手刹力 */
+double HandBrake_forceZeroValue = HAND_BRAKE_FORCE_ZERO_VALUE;	/* 手刹力零点 */
+double HandBrake_forceFullValue = HAND_BRAKE_FORCE_FULL_VALUE;	/* 手刹力满点 */
+
+/* 噪声监测 */
+FunctionalState Noisy_SetZeroEnable;
+float  Noisy_Value;
+float  Noisy_ZeroValue;
+
+/* 坡度检测 */
+FunctionalState Gradient_SetZeroEnable;
+float  Gradient_Value;
+float  Gradient_ZeroValue;
+
 
 extern BLE_SendStructTypedef BLE_SendStruct;
 
@@ -85,8 +101,7 @@ void PROCESS(void)
 
 	/* 喇叭检测 */
 	case PROCESS_MODE_DETECTED_NOISE:
-		/* 噪声数据请求 */
-		NOISE_Require();
+		NOISE_Process();
 		break;
 
 	/* 侧滑量检测 */
@@ -125,7 +140,7 @@ void ZeroCalibration(void)
 	{
 	/* 方向盘转向力检测 */
 	case PROCESS_MODE_DETECTED_STEERING_WHEEL_FORCE_AND_ANGLE:
-		ItemValueSetZeroEnable.steeringWheelForce = ENABLE;
+		SteeringWheel_SetZeroEnable = ENABLE;
 		break;
 
 	/* 制动踏板力检测 */
@@ -135,17 +150,13 @@ void ZeroCalibration(void)
 
 	/* 手刹制动力检测 */
 	case PROCESS_MODE_DETECTED_HAND_BRAKE_FORCE:
-		ItemValueSetZeroEnable.handBrakeForce = ENABLE;
+		HandBrake_SetZeroEnable = ENABLE;
 		break;
 
 	/* 喇叭检测 */
 	case PROCESS_MODE_DETECTED_NOISE:
-		ItemValueSetZeroEnable.noise = ENABLE;
+		Noisy_SetZeroEnable = ENABLE;
 		break;
-
-//	case PROCESS_MODE_DETECTED_BRAKING_DISTANCE:
-//		ItemValueSetZeroEnable.brakeAx = ENABLE;
-//		break;
 
 	case PROCESS_MODE_DETECTED_SIDESLIP_DISTANCE:
 		ItemValueSetZeroEnable.sideSlip = ENABLE;
@@ -157,7 +168,7 @@ void ZeroCalibration(void)
 
 
 	case PROCESS_MODE_DETECTED_GRADIENT:
-		ItemValueSetZeroEnable.gradient = ENABLE;
+		Gradient_SetZeroEnable = ENABLE;
 		break;
 
 	default:
@@ -208,10 +219,9 @@ void SteeringWheel_ForceAndAngleProcess(void)
 	OLED_ShowString(56, 4, value, sizeof(value));
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendStruct.length = sizeof(SteeringWheel_Force) +
-			sizeof(SteeringWheel_Angle);
-	BLE_SendStruct.pack.SteeringWheel_ForceAndAngle.force = SteeringWheel_Force;
-	BLE_SendStruct.pack.SteeringWheel_ForceAndAngle.angle = SteeringWheel_Angle;
+	BLE_SendStruct.length = sizeof(SteeringWheel_ForceAndAngleTypedef);
+	Double2Format(SteeringWheel_Force, BLE_SendStruct.pack.SteeringWheel_ForceAndAngle.force);
+	Double2Format(SteeringWheel_Angle, BLE_SendStruct.pack.SteeringWheel_ForceAndAngle.angle);
 	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHELL_FORCE_AND_ANGLE);
 #endif
 
@@ -279,8 +289,6 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 		else
 		{
 			Encode_initEnable = DISABLE;
-			BrakeDistance_initSpeed = 0;
-			BrakeDistance_distance = 0;
 		}
 #if DEVICE_OLED_DISPLAY_ENABLE
 		size = sprintf(value, "%6.1f", BrakeDistance_pedalForce);
@@ -293,13 +301,15 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 		OLED_ShowString(56, 6, value, size);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-		BLE_SendStruct.length = sizeof(BrakeDistance_pedalForce)
-				+ sizeof(BrakeDistance_initSpeed) + sizeof (BrakeDistance_speed)
-				+ sizeof(BrakeDistance_distance);
-		BLE_SendStruct.pack.PedalForce_BrakeDistance.pedalForce = BrakeDistance_pedalForce;
-		BLE_SendStruct.pack.PedalForce_BrakeDistance.initSpeed  = BrakeDistance_initSpeed;
-		BLE_SendStruct.pack.PedalForce_BrakeDistance.speed      = BrakeDistance_speed;
-		BLE_SendStruct.pack.PedalForce_BrakeDistance.distance   = BrakeDistance_distance;
+		BLE_SendStruct.length = sizeof(PedalForce_BrakeDistanceTypedef);
+		Double2Format(BrakeDistance_pedalForce,
+				BLE_SendStruct.pack.PedalForce_BrakeDistance.pedalForce);
+		Double2Format(BrakeDistance_initSpeed,
+				BLE_SendStruct.pack.PedalForce_BrakeDistance.initSpeed);
+		Double2Format(BrakeDistance_speed,
+				BLE_SendStruct.pack.PedalForce_BrakeDistance.speed);
+		Double2Format(BrakeDistance_distance,
+				BLE_SendStruct.pack.PedalForce_BrakeDistance.distance);
 		BLE_SendBytes(BLE_DATA_TYPE_PEDAL_FORCE_AND_BRAKING_DISTANCE);
 #endif
 	}

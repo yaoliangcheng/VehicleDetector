@@ -13,6 +13,12 @@ extern ItemZeroValueTypedef ItemZeroValue;
 extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 extern BLE_SendStructTypedef BLE_SendStruct;
 extern uint16_t huaTimeBase;
+
+/* 坡度检测 */
+extern FunctionalState Gradient_SetZeroEnable;
+extern float  Gradient_Value;
+extern float  Gradient_ZeroValue;
+
 /******************************************************************************/
 static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer);
 static void AccelerateAngleProcess(ACCELERATE_RecvStrcutTypedef* buffer);
@@ -287,40 +293,7 @@ static void AccelerateSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 #endif
 }
 
-/*******************************************************************************
- * @brief 下降速度计算
- */
-//static void AccelerateDownSpeedProcess(ACCELERATE_RecvStrcutTypedef* buffer)
-//{
-//	char value[7];
-//	/* x轴加速度在data1位置 */
-//	ItemValue.downAx = GetAccelerateSpeed(buffer->data1);
-//	/* 零点校准使能 */
-//	if (ItemValueSetZeroEnable.downVelocity == ENABLE)
-//	{
-//		ItemValueSetZeroEnable.downVelocity = DISABLE;
-//		/* 将当前值作为校准值 */
-//		ItemZeroValue.downAx = ItemValue.downAx;
-//		/* 校准后清空之前累加的值 */
-//		ItemValue.downVelocity = 0;
-//	}
 
-//	/* 加速度零点校准 */
-//	ItemValue.downAx -= ItemZeroValue.downAx;
-
-//  if(fabs(ItemValue.downAx)>3) {ItemValue.downVelocity+=ItemValue.downAx*0.01;huaTimeBase=0;}
-//		else huaTimeBase++;
-//	if(huaTimeBase>=30) {huaTimeBase=0;ItemValue.downVelocity=0;}
-//	if(ItemValue.downVelocity<0) ItemValue.downVelocity=0;
-//	/* 显示实时速度 */
-//	sprintf(value, "%6.1f", ItemValue.downVelocity);
-//#if DEVICE_OLED_DISPLAY_ENABLE
-//	OLED_ShowString(64, 2, value, 6);
-//#endif
-//#if DEVICE_BLE_SEND_ENABLE
-//	BLE_SendBytes(BLE_DATA_TYPE_DOWN_VELOCITY, value);
-//#endif
-//}
 
 /*******************************************************************************
  * @brief 方向盘转角检测
@@ -362,34 +335,24 @@ static void AccelerateGradientProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 	double angle = 0;
 
 	/* 俯仰角对应data2 */
-	angle = GetAngleValue(buffer->data2);
+	Gradient_Value = GetAngleValue(buffer->data2);
 	/* 零点校准使能 */
-	if (ItemValueSetZeroEnable.gradient == ENABLE)
+	if (Gradient_SetZeroEnable == ENABLE)
 	{
-		ItemValueSetZeroEnable.gradient = DISABLE;
-		ItemZeroValue.gradient = angle;
-		ItemValue.gradient = 0;
+		Gradient_SetZeroEnable = DISABLE;
+		Gradient_ZeroValue = Gradient_Value;
 	}
 
-	/* 如果还没校准，直接输出当前坡度 */
-	if (ItemZeroValue.gradient == 0)
-	{
-		ItemValue.gradient = angle;
-	}
-	else /* 如果已经校准后，则输出平均值 */
-	{
-		/* 零点校准 */
-		ItemValue.gradient = ((angle - ItemZeroValue.gradient) - ItemValue.gradient) / 2;
-	}
+	Gradient_Value -= Gradient_ZeroValue;
 
-	/* 输出显示 */
-	sprintf(value, "%6.1f", ItemValue.gradient);
 #if DEVICE_OLED_DISPLAY_ENABLE
+	/* 输出显示 */
+	sprintf(value, "%6.1f", Gradient_Value);
 	OLED_ShowString(64, 2, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendStruct.length = sizeof(ItemValue.gradient);
-	BLE_SendStruct.pack.data = ItemValue.gradient;
+	BLE_SendStruct.length = 3;
+	Double2Format(Gradient_Value, BLE_SendStruct.pack.doubleData);
 	BLE_SendBytes(BLE_DATA_TYPE_GRADIENT);
 #endif
 }
@@ -456,8 +419,8 @@ static void AccelerateSideSlipProcess(ACCELERATE_RecvTypedef* recv)
 	OLED_ShowString(64, 4, value, 6);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendStruct.length = sizeof(ItemValue.sideSlipOffset);
-	BLE_SendStruct.pack.data = ItemValue.sideSlipOffset;
+	BLE_SendStruct.length = 3;
+	Double2Format(ItemValue.sideSlipOffset, BLE_SendStruct.pack.doubleData);
 	BLE_SendBytes(BLE_DATA_TYPE_SIDESLIP_DISTANCE_MAX);
 #endif
 }

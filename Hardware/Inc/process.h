@@ -19,6 +19,10 @@
 #define STEERING_WHEEL_FORCE_ZERO_VALUE			(0X7FFFFF)
 #define STEERING_WHEEL_FORCE_FULL_VALUE			(0XFFFFFF)
 #define STEERING_WHEEL_FORCE_FULL_VALUE_N		(0X000000)
+
+#define HAND_BRAKE_FORCE_ZERO_VALUE			(0X7FFFFF)
+#define HAND_BRAKE_FORCE_FULL_VALUE			(0XFFFFFF)
+
 /******************************************************************************/
 typedef enum
 {

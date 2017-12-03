@@ -33,6 +33,7 @@ void ULTRASONICWAVE_Process(void)
 	char value[7];
 	uint8_t size;
 	uint8_t i, j;
+	uint16_t data;
 
 	if (ENABLE == ULTRASONICWAVE_Recv.status)
 	{
@@ -45,33 +46,36 @@ void ULTRASONICWAVE_Process(void)
 				(ULTRASONICWAVE_Recv.buffer.dataH << 8) | ULTRASONICWAVE_Recv.buffer.dataL;
 		UltrasonicWave_BufferIndex++;
 
-		if (UltrasonicWave_BufferIndex >= 10)
+		if (UltrasonicWave_BufferIndex >= 2)
 		{
 			UltrasonicWave_BufferIndex = 0;
 
 			/* todo 排序 */
 			/* 冒泡法排序 */
-			for (i = 0; j < 10; j++)
-			{
-				for (j = i + 1; j < 10; j++)
-				{
-					if (UltrasonicWave_DataBuffer[j] > UltrasonicWave_DataBuffer[i])
-					{
-						value = UltrasonicWave_DataBuffer[i];
-						UltrasonicWave_DataBuffer[i] = UltrasonicWave_DataBuffer[j];
-						UltrasonicWave_DataBuffer[j] = value;
-					}
-				}
-			}
-			/* 取中位值 */
-			DownVelocity_Distance = UltrasonicWave_DataBuffer[6];
+//			for (i = 0; i < 5; i++)
+//			{
+//				for (j = i + 1; j < 5; j++)
+//				{
+//					if (UltrasonicWave_DataBuffer[j] > UltrasonicWave_DataBuffer[i])
+//					{
+//						data = UltrasonicWave_DataBuffer[i];
+//						UltrasonicWave_DataBuffer[i] = UltrasonicWave_DataBuffer[j];
+//						UltrasonicWave_DataBuffer[j] = data;
+//					}
+//				}
+//			}
+//			/* 取中位值 */
+//			DownVelocity_Distance = (UltrasonicWave_DataBuffer[1] + UltrasonicWave_DataBuffer[2]) / 2;
+
+			DownVelocity_Distance = (UltrasonicWave_DataBuffer[0] + UltrasonicWave_DataBuffer[1]) / 2;
 
 			/* 叉车下降，距离减小，对于变大的数据默认为干扰 */
 			if (DownVelocity_Distance < DownVelocity_DistanceOld)
 			{
 				/* 获取当前速度 */
-				DownVelocity_Speed = (DownVelocity_DistanceOld - DownVelocity_Distance)
-						/ ULTRASONICWAVE_TIME_PERIOD;
+//				DownVelocity_Speed = (DownVelocity_DistanceOld - DownVelocity_Distance)
+//						/ ULTRASONICWAVE_TIME_PERIOD;
+				DownVelocity_Speed = DownVelocity_DistanceOld - DownVelocity_Distance;
 			}
 			else
 			{
@@ -88,9 +92,10 @@ void ULTRASONICWAVE_Process(void)
 	OLED_ShowString(72, 4, value, size);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-	BLE_SendStruct.length = sizeof(DownVelocity_Distance) + sizeof(DownVelocity_Speed);
+	BLE_SendStruct.length = sizeof(DownVelocity_SendBufferTypedef);
 	BLE_SendStruct.pack.DownVelocity_SendBuffer.distance = DownVelocity_Distance;
-	BLE_SendStruct.pack.DownVelocity_SendBuffer.speed = DownVelocity_Speed;
+	Double2Format(DownVelocity_Speed,
+			BLE_SendStruct.pack.DownVelocity_SendBuffer.speed);
 	BLE_SendBytes(BLE_DATA_TYPE_DOWN_VELOCITY);
 #endif
 		}

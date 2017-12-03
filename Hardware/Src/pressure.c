@@ -3,118 +3,18 @@
 #include "oled.h"
 
 /******************************************************************************/
-PRESSURE_ParamTypedef PRESSURE_Param;
-
-extern ItemValueTypedef     ItemValue;
-extern ItemZeroValueTypedef ItemZeroValue;
-extern ItemValueSetZeroEnableTypedef ItemValueSetZeroEnable;
 extern BLE_SendStructTypedef BLE_SendStruct;
+
+
+extern FunctionalState HandBrake_SetZeroEnable;
+extern double HandBrake_force;											/* 手刹力 */
+extern double HandBrake_forceZeroValue;	/* 手刹力零点 */
+extern double HandBrake_forceFullValue;	/* 手刹力满点 */
 
 /******************************************************************************/
 
-
 /*******************************************************************************
- * @brief 压力传感器参数初始化
- */
-void PRESSURE_Init(void)
-{
-	PRESSURE_Param.pedalValueMax = 0xFFFFFF;
-	PRESSURE_Param.pedalValueMin = 0x7FEEEE;
-	PRESSURE_Param.pedalValueRange = PRESSURE_Param.pedalValueMax
-			- PRESSURE_Param.pedalValueMin;
-
-	PRESSURE_Param.steeringWheelForceMax = 0xFFFFFF;
-	PRESSURE_Param.steeringWheelForceMin = 0x7FEEEE;
-	PRESSURE_Param.steeringWheelForceRange = PRESSURE_Param.steeringWheelForceMax
-			- PRESSURE_Param.steeringWheelForceMin;
-
-	PRESSURE_Param.handBrakeForceMax = 0xFFFFFF;
-	PRESSURE_Param.handBrakeForceMin = 0x7FEEEE;
-	PRESSURE_Param.handBrakeForceRange = PRESSURE_Param.handBrakeForceMax
-			- PRESSURE_Param.handBrakeForceMin;
-}
-
-/*******************************************************************************
- * @brief 获取踏板力值
- * 		  踏板力的线性关系
- * 		  1.最大最小值直接取线性
- * 		  2.线性拟合
- * 		  3.查表
- */
-void PRESSURE_GetPedalForce(void)
-{
-	uint32_t data = 0;
-
-	/* 获取24bitAD值 */
-	data = HX711_ReadValue();
-	/* 判断AD值合法 */
-	if (data > PRESSURE_Param.pedalValueMin)
-	{
-		data -= PRESSURE_Param.pedalValueMin;
-	}
-	else
-	{
-//		data = 0;
-	}
-	/* 转换踏板力值 */
-//	ItemValue.pedalForce = (data / (double)PRESSURE_Param.pedalValueRange)
-//			* PRESSURE_RANGE_PEDAL_FORCE * 1.916;
-	ItemValue.pedalForce = (data / (double)PRESSURE_Param.pedalValueRange)
-			* PRESSURE_RANGE_PEDAL_FORCE;
-	/* 零点校准使能 */
-	if (ItemValueSetZeroEnable.pedalForce == ENABLE)
-	{
-		ItemValueSetZeroEnable.pedalForce = DISABLE;
-		ItemZeroValue.pedalForce = ItemValue.pedalForce;
-	}
-
-	/* 零点校准 */
-	ItemValue.pedalForce -= ItemZeroValue.pedalForce;
-}
-
-/*******************************************************************************
- * @brief 获取转向力
- */
-void PRESSURE_GetSteeringWheelForce(void)
-{
-	int32_t data = 0;
-	char value[7];
-
-	/* 获取24bitAD值 */
-	data = HX711_ReadValue();
-	/* 获取的AD值减去中间值 */
-	data -= PRESSURE_RANGE_MEDIAN_VALUE;
-
-	/* 转换转向力值 */
-	ItemValue.steeringWheelForce =
-			(data / (double)PRESSURE_Param.steeringWheelForceRange)
-			* PRESSURE_RANGE_STEERING_WHEEL_FORCE * 5.44;
-
-	if (ItemValueSetZeroEnable.steeringWheelForce == ENABLE)
-	{
-		ItemValueSetZeroEnable.steeringWheelForce = DISABLE;
-		ItemZeroValue.steeringWheelForce = ItemValue.steeringWheelForce;
-	}
-
-	/* 零点校准 */
-	ItemValue.steeringWheelForce -= ItemZeroValue.steeringWheelForce;
-
-
-#if DEVICE_OLED_DISPLAY_ENABLE
-	sprintf(value, "%6.1f", ItemValue.steeringWheelForce);
-	OLED_ShowString(56, 2, value, sizeof(value));
-#endif
-#if DEVICE_BLE_SEND_ENABLE
-	BLE_SendStruct.length = sizeof(ItemValue.steeringWheelForce);
-	BLE_SendStruct.pack.data = ItemValue.steeringWheelForce;
-//	BLE_SendBytes(BLE_DATA_TYPE_STEERING_WHEEL_FORCE);
-#endif
-
-	HAL_Delay(200);
-}
-
-/*******************************************************************************
- * @brief 获取转向力
+ * @brief 手刹力
  */
 void PRESSURE_GetHandBrakeForce(void)
 {
@@ -123,27 +23,28 @@ void PRESSURE_GetHandBrakeForce(void)
 
 	/* 获取24bitAD值 */
 	data = HX711_ReadValue();
-	/* 获取的AD值减去中间值 */
-	data -= PRESSURE_RANGE_MEDIAN_VALUE;
-	/* 转换踏板力值 */
-	ItemValue.handBrakeForce =
-			(data / (double)PRESSURE_Param.handBrakeForceRange)
-			* PRESSURE_RANGE_HAND_BRAKE_FORCE;
 
-	if (ItemValueSetZeroEnable.handBrakeForce == ENABLE)
+	if (HandBrake_SetZeroEnable == ENABLE)
 	{
-		ItemValueSetZeroEnable.handBrakeForce = DISABLE;
-		ItemZeroValue.handBrakeForce = ItemValue.handBrakeForce;
+		HandBrake_SetZeroEnable = DISABLE;
+		HandBrake_forceZeroValue = data;
 	}
 
-	/* 零点校准 */
-	ItemValue.handBrakeForce -= ItemZeroValue.handBrakeForce;
+	data -= HandBrake_forceZeroValue;
+	/* 转换转向力值 */
+	if (data > 0)
+	{
+		HandBrake_force = (data / (HandBrake_forceFullValue - HandBrake_forceZeroValue))
+				* PRESSURE_RANGE_HAND_BRAKE_FORCE;
+	}
 
-	sprintf(value, "%6.1f", ItemValue.handBrakeForce);
 #if DEVICE_OLED_DISPLAY_ENABLE
+	sprintf(value, "%6.1f", HandBrake_force);
 	OLED_ShowString(56, 2, value, sizeof(value));
 #endif
 #if DEVICE_BLE_SEND_ENABLE
+	BLE_SendStruct.length = 3;
+	Double2Format(HandBrake_force, BLE_SendStruct.pack.doubleData);
 	BLE_SendBytes(BLE_DATA_TYPE_HAND_BRAKE_FORCE);
 #endif
 

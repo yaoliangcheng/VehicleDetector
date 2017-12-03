@@ -26,5 +26,6 @@
 /******************************************************************************/
 HAL_StatusTypeDef UART_DMAIdleConfig(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
 uint8_t CheckSum(uint8_t* buffer, uint8_t size);
+void Double2Format(double data, uint8_t* pBuffer);
 
 #endif

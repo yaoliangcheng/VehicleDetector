@@ -54,3 +54,37 @@ uint8_t CheckSum(uint8_t* buffer, uint8_t size)
 
 	return sum;
 }
+
+/*******************************************************************************
+ *
+ */
+void Double2Format(double data, uint8_t* pBuffer)
+{
+	int16_t temp1 = 0;
+	uint8_t temp2 = 0;
+
+	temp1 = (int16_t)data;
+	temp2 = (uint8_t)((data - temp1) * 10);
+
+	*pBuffer       = temp1 & 0x00FF;
+	*(pBuffer + 1) = (temp1 & 0xFF00) >> 8;
+	*(pBuffer + 2) = temp2;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
