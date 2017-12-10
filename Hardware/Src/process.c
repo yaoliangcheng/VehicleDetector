@@ -20,11 +20,11 @@ double BrakeDistance_oldSpeed;					/* 制动检测-旧速度 */
 double BrakeDistance_initSpeed;					/* 初始速度 */
 double BrakeDistance_distance;					/* 制动检测-距离 */
 
-uint16_t Encode_plusCnt = 0;				/* 编码器脉冲数 */
-uint16_t Encode_plusCntOld = 0;				/* 编码器旧脉冲数 */
-uint16_t Encode_periodCntTotal = 0;			/* 总周期数 */
-uint16_t Encode_periodCnt = 0;				/* 周期数 */
-FunctionalState Encode_processEnable;		/* 编码器Process使能 */
+uint16_t Encode_plusCnt = 0;					/* 编码器脉冲数 */
+uint16_t Encode_plusCntOld = 0;					/* 编码器旧脉冲数 */
+uint16_t Encode_periodCntTotal = 0;				/* 总周期数 */
+uint16_t Encode_periodCnt = 0;					/* 周期数 */
+FunctionalState Encode_processEnable;			/* 编码器Process使能 */
 FunctionalState Encode_initEnable;
 
 /* 货叉下降速度检测 */
@@ -48,9 +48,7 @@ double HandBrake_forceZeroValue = HAND_BRAKE_FORCE_ZERO_VALUE;	/* 手刹力零点 */
 double HandBrake_forceFullValue = HAND_BRAKE_FORCE_FULL_VALUE;	/* 手刹力满点 */
 
 /* 噪声监测 */
-FunctionalState Noisy_SetZeroEnable;
 float  Noisy_Value;
-float  Noisy_ZeroValue;
 
 /* 坡度检测 */
 FunctionalState Gradient_SetZeroEnable;
@@ -65,6 +63,7 @@ FunctionalState SideSlip_SetZeroEnable;
 double   SideSlip_distance;
 uint32_t SideSlip_plusCnt;
 double   SideSlip_angle;
+double   SideSlip_angleZeroValue;
 
 extern BLE_SendStructTypedef BLE_SendStruct;
 
@@ -148,11 +147,6 @@ void ZeroCalibration(void)
 	/* 手刹制动力检测 */
 	case PROCESS_MODE_DETECTED_HAND_BRAKE_FORCE:
 		HandBrake_SetZeroEnable = ENABLE;
-		break;
-
-	/* 喇叭检测 */
-	case PROCESS_MODE_DETECTED_NOISE:
-		Noisy_SetZeroEnable = ENABLE;
 		break;
 
 	/* 侧滑量检测 */
@@ -244,9 +238,15 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 		/* 缓存旧值 */
 		Encode_plusCntOld = Encode_plusCnt;
 
-		/* 计算速度 */
-		BrakeDistance_speed = ((ENCODE_WHEEL_PERIMETER / (double)ENCODE_PERIOD_PLUS_CNT)
-								* plusCnt) / GET_VALUE_TIME_PERIOD;
+		/* 脉冲数大于基数才认为是机动车运行，否则为震动造成的，不计算速度 */
+		if (plusCnt > 100)
+		{
+			/* 计算速度 */
+			BrakeDistance_speed = ((ENCODE_WHEEL_PERIMETER / (double)ENCODE_PERIOD_PLUS_CNT)
+									* plusCnt) / GET_VALUE_TIME_PERIOD;
+			/* 速度单位转换 mm/s -> km/h (*0.0036) */
+			BrakeDistance_speed = BrakeDistance_speed * 0.0036;
+		}
 
 		/* 获取24bitAD值 */
 		data = HX711_ReadValue();
@@ -255,6 +255,17 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 		{
 			BrakeDistance_SetZeroEnable = DISABLE;
 			BrakeDistance_pedalForceZeroValue = data;
+
+			BrakeDistance_pedalForce = 0;					/* 踏板力 */
+			BrakeDistance_speed      = 0;					/* 制动检测-速度 */
+			BrakeDistance_oldSpeed   = 0;					/* 制动检测-旧速度 */
+			BrakeDistance_initSpeed  = 0;					/* 初始速度 */
+			BrakeDistance_distance   = 0;					/* 制动检测-距离 */
+
+			Encode_plusCnt = 0;								/* 编码器脉冲数 */
+			Encode_plusCntOld = 0;							/* 编码器旧脉冲数 */
+			Encode_periodCntTotal = 0;						/* 总周期数 */
+			Encode_periodCnt = 0;							/* 周期数 */
 		}
 
 		/* 转换踏板力值 */
@@ -266,6 +277,7 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 		/* 开始制动 */
 		if (BrakeDistance_pedalForce > 5)
 		{
+			/* 开始制动的第一时间，脉冲计算清空重新计数，并获取初速度值 */
 			if (Encode_initEnable == DISABLE)
 			{
 				Encode_initEnable = ENABLE;
@@ -279,11 +291,11 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 			BrakeDistance_distance = ((Encode_periodCntTotal * ENCODE_WHEEL_PERIMETER)
 					+ ((ENCODE_WHEEL_PERIMETER / (double)ENCODE_PERIOD_PLUS_CNT)
 					* Encode_plusCnt)) / 2;
+			BrakeDistance_distance = BrakeDistance_distance * 0.001;
 		}
 		else
 		{
 			Encode_initEnable = DISABLE;
-			BrakeDistance_initSpeed = 0;
 		}
 #if DEVICE_OLED_DISPLAY_ENABLE
 		size = sprintf(value, "%6.1f", BrakeDistance_pedalForce);
@@ -322,20 +334,33 @@ void Process_SideSlipDistance(void)
 
 	/* 获取位移 */
 	plusCnt = LL_TIM_GetCounter(TIM3);
-	SideSlip_distance = ((SideSlip_plusCnt * ENCODE_WHEEL_PERIMETER)
-			+ ((ENCODE_WHEEL_PERIMETER / (double)ENCODE_PERIOD_PLUS_CNT)
-			* plusCnt)) / 2;
+
 	/* 获取角度 */
 	ACCELERATE_Process();
-	/* 计算偏移量 */
-	SideSlip_distance = SideSlip_distance * sin(SideSlip_angle);
-	SideSlip_distance = 123.456;
+	if (SideSlip_SetZeroEnable == ENABLE)
+	{
+		SideSlip_SetZeroEnable = DISABLE;
+		SideSlip_angleZeroValue = SideSlip_angle;
+	}
+
+	if (plusCnt > 100)
+	{
+		/* 计算位移 */
+		SideSlip_distance = ((SideSlip_plusCnt * ENCODE_WHEEL_PERIMETER)
+			+ ((ENCODE_WHEEL_PERIMETER / (double)ENCODE_PERIOD_PLUS_CNT)
+			* plusCnt)) / 2;
+		/* 计算角度 */
+		SideSlip_angle -= SideSlip_angleZeroValue;
+		/* 计算偏移量 */
+		SideSlip_distance = SideSlip_distance * sin(SideSlip_angle);
+	}
+
 #if DEVICE_OLED_DISPLAY_ENABLE
 		size = sprintf(value, "%6.1f", SideSlip_distance);
 		OLED_ShowString(56, 0, value, size);
 #endif
 #if DEVICE_BLE_SEND_ENABLE
-		BLE_SendStruct.length = sizeof(SideSlip_distance);
+		BLE_SendStruct.length = 3;
 		Double2Format(SideSlip_distance, BLE_SendStruct.pack.doubleData);
 		BLE_SendBytes(BLE_DATA_TYPE_SIDESLIP_FORCE);
 #endif

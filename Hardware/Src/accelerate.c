@@ -345,7 +345,6 @@ static void AccelerateGradientProcess(ACCELERATE_RecvStrcutTypedef* buffer)
 		Gradient_SetZeroEnable = DISABLE;
 		Gradient_ZeroValue = Gradient_Value;
 	}
-
 	Gradient_Value -= Gradient_ZeroValue;
 
 #if DEVICE_OLED_DISPLAY_ENABLE

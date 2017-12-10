@@ -11,10 +11,7 @@ uint8_t NOISE_RequireCmd[8] = \
 uint8_t NOISE_RecvBytes[NOISE_UART_RX_BYTE_MAX];
 NOISE_RecvTypedef NOISE_Recv;
 
-extern FunctionalState Noisy_SetZeroEnable;
 extern float  Noisy_Value;
-extern float  Noisy_ZeroValue;
-
 extern BLE_SendStructTypedef BLE_SendStruct;
 		
 /*******************************************************************************
@@ -53,14 +50,6 @@ void NOISE_Process(void)
 			noiseValue = (NOISE_Recv.buffer.dataH << 8) | NOISE_Recv.buffer.dataL;
 			/* 噪音值 = 数据 * 0.1 */
 			Noisy_Value = ((float)noiseValue * 0.1);
-			/* 零点校准使能 */
-			if (Noisy_SetZeroEnable == ENABLE)
-			{
-				Noisy_SetZeroEnable = DISABLE;
-				Noisy_ZeroValue = Noisy_Value;
-			}
-			/* 零点校准 */
-			Noisy_Value -= Noisy_ZeroValue;
 
 #if DEVICE_OLED_DISPLAY_ENABLE
 			sprintf(value, "%6.1f", Noisy_Value);

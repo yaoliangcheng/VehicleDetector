@@ -8,11 +8,6 @@ BLE_RecvTypedef BLE_Recv;
 uint8_t BLE_sendBuffer[BLE_UART_RX_BYTE_MAX];
 BLE_SendStructTypedef BLE_SendStruct;
 
-
-extern double   SideSlip_distance;
-extern uint32_t SideSlip_plusCnt;
-extern double   SideSlip_angle;
-
 extern const char ChineseFont_SteeringWheelForce[CHINESE_FONT_SIZE * 6];
 extern const char ChineseFont_CurrentValue[CHINESE_FONT_SIZE * 3];
 extern const char ChineseFont_ValueMax[CHINESE_FONT_SIZE * 3];
@@ -22,6 +17,45 @@ extern const char ChineseFont_BrakingDistance[CHINESE_FONT_SIZE * 4];
 extern const char ChineseFont_DownVelocityTitle[CHINESE_FONT_SIZE * 8];
 extern const char ChineseFont_DownVelocityDistance[CHINESE_FONT_SIZE * 4];
 extern const char ChineseFont_DownVelocitySpeed[CHINESE_FONT_SIZE * 4];
+
+/* 制动距离检测 */
+extern double BrakeDistance_pedalForce;					/* 踏板力 */
+extern double BrakeDistance_speed;						/* 制动检测-速度 */
+extern double BrakeDistance_oldSpeed;					/* 制动检测-旧速度 */
+extern double BrakeDistance_initSpeed;					/* 初始速度 */
+extern double BrakeDistance_distance;					/* 制动检测-距离 */
+
+extern uint16_t Encode_plusCnt;						/* 编码器脉冲数 */
+extern uint16_t Encode_plusCntOld;					/* 编码器旧脉冲数 */
+extern uint16_t Encode_periodCntTotal;				/* 总周期数 */
+extern uint16_t Encode_periodCnt;					/* 周期数 */
+
+/* 货叉下降速度检测 */
+extern uint16_t DownVelocity_Distance;
+extern uint16_t DownVelocity_DistanceOld;
+extern double   DownVelocity_Speed;
+
+/* 方向盘 */
+extern double SteeringWheel_Force;
+extern double SteeringWheel_Angle;
+
+/* 手刹力 */
+extern double HandBrake_force;											/* 手刹力 */
+
+/* 噪声监测 */
+extern float  Noisy_Value;
+
+/* 坡度检测 */
+extern float  Gradient_Value;
+
+/* 电池电量 */
+extern uint8_t BatteryVoltage_Value;
+
+/* 侧滑量检测 */
+extern double   SideSlip_distance;
+extern uint32_t SideSlip_plusCnt;
+extern double   SideSlip_angle;
+
 
 /*******************************************************************************
  * @brief 蓝牙初始化
@@ -125,11 +159,14 @@ void BLE_Process(void)
 			ACCELERATE_SetBackInfo(0x00, 0x00);
 			break;
 
+		/* 方向盘力和转角检测 */
 		case BLE_CMD_TYPE_DETECTED_STEERING_WHEEL_FORCE_AND_ANGLE:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_STEERING_WHEEL_FORCE_AND_ANGLE;
 			/* 设置角度信息回传 */
 			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ANGLE_MARK, 0x00);
-			OLED_Clear();
+//			OLED_Clear();
+			SteeringWheel_Force = 0;
+			SteeringWheel_Angle = 0;
 			break;
 
 		/* 开启制动距离检测 */
@@ -142,9 +179,19 @@ void BLE_Process(void)
 			LL_TIM_SetCounter(TIM7, 0);
 			LL_TIM_EnableCounter(TIM7);
 
-			OLED_Clear();
-			OLED_ShowChineseString(0, 0, (char*)ChineseFont_BrakingDistance,
-					sizeof(ChineseFont_BrakingDistance) / CHINESE_FONT_SIZE);
+//			OLED_Clear();
+//			OLED_ShowChineseString(0, 0, (char*)ChineseFont_BrakingDistance,
+//					sizeof(ChineseFont_BrakingDistance) / CHINESE_FONT_SIZE);
+			BrakeDistance_pedalForce = 0;					/* 踏板力 */
+			BrakeDistance_speed      = 0;					/* 制动检测-速度 */
+			BrakeDistance_oldSpeed   = 0;					/* 制动检测-旧速度 */
+			BrakeDistance_initSpeed  = 0;					/* 初始速度 */
+			BrakeDistance_distance   = 0;					/* 制动检测-距离 */
+
+			Encode_plusCnt = 0;								/* 编码器脉冲数 */
+			Encode_plusCntOld = 0;							/* 编码器旧脉冲数 */
+			Encode_periodCntTotal = 0;						/* 总周期数 */
+			Encode_periodCnt = 0;							/* 周期数 */
 			break;
 
 		/* 开启手刹制动力检测 */
@@ -153,6 +200,7 @@ void BLE_Process(void)
 			OLED_Clear();
 			OLED_ShowString(0, 2, "value = ", 8);
 			OLED_ShowString(104, 2, "N", 1);
+			HandBrake_force = 0;
 			break;
 
 		/* 开启喇叭检测 */
@@ -165,6 +213,7 @@ void BLE_Process(void)
 			OLED_Clear();
 			OLED_ShowString(0, 2, "value = ", 8);
 			OLED_ShowString(104, 2, "dB", 2);
+			Noisy_Value = 0;
 			break;
 
 		/* 开启侧滑量检测 */
@@ -194,6 +243,9 @@ void BLE_Process(void)
 						sizeof(ChineseFont_DownVelocityDistance) / CHINESE_FONT_SIZE);
 			OLED_ShowChineseString(0, 4, (char*)ChineseFont_DownVelocitySpeed,
 						sizeof(ChineseFont_DownVelocitySpeed) / CHINESE_FONT_SIZE);
+			DownVelocity_Distance    = 0;
+			DownVelocity_DistanceOld = 0;
+			DownVelocity_Speed       = 0;
 			break;
 
 		/* 坡度检测 */
@@ -202,6 +254,7 @@ void BLE_Process(void)
 			ACCELERATE_SetBackInfo(ACCELERATE_TYPE_ANGLE_MARK, 0x00);
 			PROCESS_Mode = PROCESS_MODE_DETECTED_GRADIENT;
 			OLED_Clear();
+			Gradient_Value = 0;
 			break;
 
 		/* 开启电池电量检测 */
@@ -217,46 +270,3 @@ void BLE_Process(void)
 	}
 }
 
-/*******************************************************************************
- * @brief 蓝牙命令子类型处理
- */
-void BLE_SonsorSetZeroProcess(uint8_t subType)
-{
-	switch (subType)
-	{
-	/* 转向力置零 */
-	case BLE_CMD_SUBTYPE_SET_ZORO_STEERING_WHEEL_FORCE:
-		break;
-
-	/* 转角置零 */
-	case BLE_CMD_SUBTYPE_SET_ZORO_STEERING_WHEEL_ANGLE:
-		break;
-
-	/* 制动距离置零 */
-	case BLE_CMD_SUBTYPE_SET_ZORO_BRAKING_DISTANCE:
-		break;
-
-	/* 踏板力置零 */
-	case BLE_CMD_SUBTYPE_SET_ZORO_PEDAL_FORCE:
-		break;
-
-	/* 手刹力置零 */
-	case BLE_CMD_SUBTYPE_SET_ZORO_HAND_BRAKE_FORCE:
-		break;
-
-	/* 噪声置零 */
-	case BLE_CMD_SUBTYPE_SET_ZORO_NOISE:
-		break;
-
-	 /* 侧滑力置零 */
-	case BLE_CMD_SUBTYPE_SET_ZORO_SIDESLIP_FORCE:
-		break;
-
-	 /* 下降速度置零 */
-	case BLE_CMD_SUBTYPE_SET_ZORO_DOWN_VELOCITY:
-		break;
-
-	default:
-		break;
-	}
-}
