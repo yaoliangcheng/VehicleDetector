@@ -24,6 +24,8 @@ uint16_t Encode_plusCnt = 0;					/* 编码器脉冲数 */
 uint16_t Encode_plusCntOld = 0;					/* 编码器旧脉冲数 */
 uint16_t Encode_periodCntTotal = 0;				/* 总周期数 */
 uint16_t Encode_periodCnt = 0;					/* 周期数 */
+uint8_t  Encode_errorCnt = 0;					/* 错误计数 */
+FunctionalState Encode_errorStatus;				/* 错误状态 */
 FunctionalState Encode_processEnable;			/* 编码器Process使能 */
 FunctionalState Encode_initEnable;
 
@@ -216,12 +218,13 @@ void SteeringWheel_ForceAndAngleProcess(void)
 	HAL_Delay(200);
 }
 
+uint16_t plusCnt = 0;
 /*******************************************************************************
  *
  */
 void PROCESS_PedalForceAndBrakeDistance(void)
 {
-	uint16_t plusCnt = 0;
+	
 	uint32_t data = 0;
 	char     value[10];
 	uint8_t  size = 0;
@@ -230,8 +233,45 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 	{
 		Encode_processEnable = DISABLE;
 
-		plusCnt = ((ENCODE_PERIOD_PLUS_CNT - Encode_plusCntOld) +
+		/* 错误状态，直接返回 */
+		if (Encode_errorStatus == ENABLE)
+			return;
+
+		if (LL_TIM_GetDirection(TIM3) != LL_TIM_COUNTERDIRECTION_UP)
+		{
+			Encode_errorCnt++;
+			if (Encode_errorCnt > 10)
+			{
+				Encode_errorStatus = ENABLE;
+			}
+			Encode_periodCnt = 0;
+			return;
+		}
+
+		/* 有过零脉冲 */
+		if (Encode_periodCnt > 0)
+		{
+			plusCnt = ((ENCODE_PERIOD_PLUS_CNT - Encode_plusCntOld) +
 				((Encode_periodCnt - 1) * ENCODE_PERIOD_PLUS_CNT) + Encode_plusCnt) / 2;
+			/* 车辆前进，则清空错误计数 */
+			Encode_errorCnt = 0;
+		}
+		else if (Encode_plusCnt > Encode_plusCntOld)
+		{
+			plusCnt = (Encode_plusCnt - Encode_plusCntOld) / 2;
+		}
+		else
+		{
+			/* 连续3s检测到编码器倒退，则认为车辆抖动引起的，停止检测 */
+//			Encode_errorCnt++;
+//			if (Encode_errorCnt > 6)
+//			{
+//				Encode_errorCnt = 0;
+//				Encode_errorStatus = ENABLE;
+//			}
+//			return;
+		}
+
 		/* 用完后旧的脉冲周期要清空 */
 		Encode_periodCnt = 0;
 		
@@ -239,10 +279,10 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 		Encode_plusCntOld = Encode_plusCnt;
 
 		/* 脉冲数大于基数才认为是机动车运行，否则为震动造成的，不计算速度 */
-		if (plusCnt > 100)
+//		if (plusCnt > 100)
 		{
 			/* 计算速度 */
-			BrakeDistance_speed = ((ENCODE_WHEEL_PERIMETER / (double)ENCODE_PERIOD_PLUS_CNT)
+			BrakeDistance_speed = ((ENCODE_WHEEL_PERIMETER / (double)(ENCODE_PERIOD_PLUS_CNT / 2))
 									* plusCnt) / GET_VALUE_TIME_PERIOD;
 			/* 速度单位转换 mm/s -> km/h (*0.0036) */
 			BrakeDistance_speed = BrakeDistance_speed * 0.0036;
@@ -289,8 +329,8 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 			}
 			/* 计算距离 */
 			BrakeDistance_distance = ((Encode_periodCntTotal * ENCODE_WHEEL_PERIMETER)
-					+ ((ENCODE_WHEEL_PERIMETER / (double)ENCODE_PERIOD_PLUS_CNT)
-					* Encode_plusCnt)) / 2;
+					+ (ENCODE_WHEEL_PERIMETER / (double)(ENCODE_PERIOD_PLUS_CNT / 2))
+					* Encode_plusCnt) / 2;
 			BrakeDistance_distance = BrakeDistance_distance * 0.001;
 		}
 		else
@@ -343,16 +383,17 @@ void Process_SideSlipDistance(void)
 		SideSlip_angleZeroValue = SideSlip_angle;
 	}
 
-	if (plusCnt > 100)
+//	if (plusCnt > 100)
 	{
 		/* 计算位移 */
-		SideSlip_distance = ((SideSlip_plusCnt * ENCODE_WHEEL_PERIMETER)
-			+ ((ENCODE_WHEEL_PERIMETER / (double)ENCODE_PERIOD_PLUS_CNT)
-			* plusCnt)) / 2;
+		SideSlip_distance = (((SideSlip_plusCnt * ENCODE_WHEEL_PERIMETER)
+			+ (ENCODE_WHEEL_PERIMETER / (double)(ENCODE_PERIOD_PLUS_CNT / 2))
+			* plusCnt) / 2);
 		/* 计算角度 */
 		SideSlip_angle -= SideSlip_angleZeroValue;
 		/* 计算偏移量 */
 		SideSlip_distance = SideSlip_distance * sin(SideSlip_angle);
+		SideSlip_distance = SideSlip_distance * 0.001;
 	}
 
 #if DEVICE_OLED_DISPLAY_ENABLE

@@ -29,6 +29,7 @@ extern uint16_t Encode_plusCnt;						/* 编码器脉冲数 */
 extern uint16_t Encode_plusCntOld;					/* 编码器旧脉冲数 */
 extern uint16_t Encode_periodCntTotal;				/* 总周期数 */
 extern uint16_t Encode_periodCnt;					/* 周期数 */
+extern FunctionalState Encode_errorStatus;				/* 错误状态 */
 
 /* 货叉下降速度检测 */
 extern uint16_t DownVelocity_Distance;
@@ -192,6 +193,7 @@ void BLE_Process(void)
 			Encode_plusCntOld = 0;							/* 编码器旧脉冲数 */
 			Encode_periodCntTotal = 0;						/* 总周期数 */
 			Encode_periodCnt = 0;							/* 周期数 */
+			Encode_errorStatus = DISABLE;
 			break;
 
 		/* 开启手刹制动力检测 */
@@ -232,7 +234,7 @@ void BLE_Process(void)
 		/* 开启货叉下降速度检测 */
 		case BLE_CMD_TYPE_DETECTED_DOWN_VELOCITY:
 			PROCESS_Mode = PROCESS_MODE_DETECTED_DOWN_VELOCITY;
-			LL_TIM_SetAutoReload(TIM7, 499);
+			LL_TIM_SetAutoReload(TIM7, 999);
 			LL_TIM_SetCounter(TIM7, 0);
 			LL_TIM_EnableCounter(TIM7);
 

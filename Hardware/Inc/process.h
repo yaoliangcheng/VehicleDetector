@@ -13,7 +13,7 @@
 /******************************************************************************/
 #define GET_VALUE_TIME_PERIOD			(double)(0.5)
 
-#define PEDAL_FORCE_ZERO_VALUE			(0X7FFFFF)
+#define PEDAL_FORCE_ZERO_VALUE			(0X7E332A)
 #define PEDAL_FORCE_FULL_VALUE			(0XFFFFFF)
 
 #define STEERING_WHEEL_FORCE_ZERO_VALUE			(0X7FFFFF)
