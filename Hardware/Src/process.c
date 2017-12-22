@@ -191,11 +191,15 @@ void SteeringWheel_ForceAndAngleProcess(void)
 	{
 		SteeringWheel_Force = (data / (SteeringWheel_ForceFullValue - SteeringWheel_ForceZeroValue))
 				* PRESSURE_RANGE_STEERING_WHEEL_FORCE;
+		/* 在此处添加校正系数 */
+		SteeringWheel_Force = SteeringWheel_Force * 1.0;
 	}
 	else
 	{
 		SteeringWheel_Force = (data / (SteeringWheel_ForceZeroValue - SteeringWheel_ForceFullValue_N))
 				* PRESSURE_RANGE_STEERING_WHEEL_FORCE;
+		/* 在此处添加校正系数 */
+		SteeringWheel_Force = SteeringWheel_Force * 1.0;
 	}
 
 	/* 角度值 */
@@ -313,6 +317,8 @@ void PROCESS_PedalForceAndBrakeDistance(void)
 		BrakeDistance_pedalForce = (data /
 				(double)(BrakeDistance_pedalForceFullValue - BrakeDistance_pedalForceZeroValue))
 				* PRESSURE_RANGE_PEDAL_FORCE;
+		/* 在此处添加校正系数 */
+		BrakeDistance_pedalForce = BrakeDistance_pedalForce * 1.0;
 
 		/* 开始制动 */
 		if (BrakeDistance_pedalForce > 5)

@@ -31,11 +31,13 @@ void PRESSURE_GetHandBrakeForce(void)
 	}
 
 	data -= HandBrake_forceZeroValue;
-	/* 转换转向力值 */
+
 	if (data > 0)
 	{
 		HandBrake_force = (data / (HandBrake_forceFullValue - HandBrake_forceZeroValue))
 				* PRESSURE_RANGE_HAND_BRAKE_FORCE;
+		/* 在此处添加校正系数 */
+		HandBrake_force = HandBrake_force * 1.0;
 	}
 
 #if DEVICE_OLED_DISPLAY_ENABLE
